@@ -55,7 +55,7 @@ class MyPlainTextEdit(QPlainTextEdit):
     def process_previous_word(self):
         """
         Overwrites the word before the cursor with the default mapping, if said mapping exists.
-        def: word = string of non-whitespace chars, not beginning with `'` or `"`, nor ending with `'`, `"`, `?`, or `!`
+        def: word pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$'
         """
         cursor = self.textCursor()
         text = cursor.block().text()[:cursor.positionInBlock()]  # Look b/w start of para and current pos.
