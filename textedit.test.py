@@ -51,6 +51,9 @@ class TestInsertMode(unittest.TestCase):
         QTest.keyClicks(self.editor, 'a')
         QTest.keyClick(self.editor, Qt.Key_Return)
         self.assertEqual(self.editor.textCursor().block().previous().text(), "A", msg="return btn coersion")
+        self.editor.document().clear()
+        QTest.keyClicks(self.editor, 'a/')
+        self.assertEqual(self.editor.textCursor().block().text(), "A/", msg="slash coersion")
 
     def test_capitalization_preservation(self):
         QTest.keyClicks(self.editor, 'And ')
@@ -66,9 +69,9 @@ class TestInsertMode(unittest.TestCase):
         QTest.keyClicks(self.editor, ';,, ')
         self.assertEqual(self.editor.textCursor().block().text(), "ax, ")
 
-    def test_handles_quotes(self):
-        QTest.keyClicks(self.editor, '""\'"thi"\' ')
-        self.assertEqual(self.editor.textCursor().block().text(), '""\'"the"\' ')
+    def test_handles_starting_symbols(self):
+        QTest.keyClicks(self.editor, '?!3""\'"thi ')
+        self.assertEqual(self.editor.textCursor().block().text(), '?!3""\'"the ')
 
     def test_end_of_word_stripping(self):
         QTest.keyClicks(self.editor, 'thi?!"\' ')

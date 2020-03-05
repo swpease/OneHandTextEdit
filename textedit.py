@@ -70,11 +70,11 @@ class MyPlainTextEdit(QPlainTextEdit):
         """
         cursor = self.textCursor()
         text = cursor.block().text()[:cursor.positionInBlock()]  # Look b/w start of para and current pos.
-        end_seq_match = re.search(r'(?P<lead_quotes>[\"\']*)(?P<raw_word>\S+)\s*$', text)  # e.g. `'"lk . jkln,.k  ` -> `jkln,.k  `
+        end_seq_match = re.search(r'(?P<lead_symbols>[^\sA-Za-z,.;:<>-]*)(?P<raw_word>[A-Za-z,.;:<>\'-]+)(?P<end>[^A-Za-z,.;:<>-]*)$', text)
         if end_seq_match is None:  # No word to handle
             return
 
-        match_len = len(end_seq_match[0]) - len(end_seq_match.group('lead_quotes'))  # how far back to send cursor
+        match_len = len(end_seq_match[0]) - len(end_seq_match.group('lead_symbols'))  # how far back to send cursor
         word = self.map_word(end_seq_match.group('raw_word'))
         if word is None:  # Word not found in regex_map dictionary
             return
@@ -86,7 +86,7 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, e: QKeyEvent):
         if self.mode == Mode.INSERT:
-            if e.key() == Qt.Key_Space or e.key() == Qt.Key_Return:  # For some reason Return is handled before kRE capturing.
+            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash]:  # For some reason Return is handled before kRE capturing.
                 self.process_previous_word()
 
             super().keyPressEvent(e)
