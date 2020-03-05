@@ -33,6 +33,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$'
         :return: the default mapped word, if found. Else, None.
         """
+        # TODO if i want to reuse this, I should ssert the assumed regex
         is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map  # Want to keep capitalization in end word.
 
         # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
@@ -53,10 +54,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         # No matched, so return None.
 
     def process_previous_word(self):
-        """
-        Overwrites the word before the cursor with the default mapping, if said mapping exists.
-        def: word pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$'
-        """
+        """Overwrites the word before the cursor with the default mapping, if said mapping exists. """
         cursor = self.textCursor()
         text = cursor.block().text()[:cursor.positionInBlock()]  # Look b/w start of para and current pos.
         end_seq_match = re.search(r'(?P<lead_symbols>[^\sA-Za-z,.;:<>-]*)(?P<raw_word>[A-Za-z,.;:<>\'-]+?)(?P<end>[^A-Za-z,.;:<>-]*)$', text)
