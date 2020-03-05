@@ -16,7 +16,7 @@ class TestInsertMode(unittest.TestCase):
         app = QApplication([])
         cls.src = 'test_words.txt'
         cls.dest = 'test_out.json'
-        words = ["A", "a", "the", "and", "ax"]
+        words = ["A", "a", "the", "and", "ax", "it's"]
         with open(cls.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
@@ -68,6 +68,11 @@ class TestInsertMode(unittest.TestCase):
         self.editor.document().clear()
         QTest.keyClicks(self.editor, ';,, ')
         self.assertEqual(self.editor.textCursor().block().text(), "ax, ")
+
+    def test_handles_contractions(self):
+        QTest.keyClicks(self.editor, 'iy\'l ')
+        self.assertEqual(self.editor.textCursor().block().text(), "it\'s ")
+
 
     def test_handles_starting_symbols(self):
         QTest.keyClicks(self.editor, '?!3""\'"thi ')

@@ -37,7 +37,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         Preserves first-letter capitalization.
         Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
 
-        :param raw_word: a string of non-whitespace chars, beginning with not(' or ")
+        :param raw_word: pattern ~ [A-Za-z,.;:<>\'-]+? (NB: cannot end in `'`)
         :return: the default mapped word, if found. Else, None.
         """
         is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map  # Want to keep capitalization in end word.
@@ -70,7 +70,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         """
         cursor = self.textCursor()
         text = cursor.block().text()[:cursor.positionInBlock()]  # Look b/w start of para and current pos.
-        end_seq_match = re.search(r'(?P<lead_symbols>[^\sA-Za-z,.;:<>-]*)(?P<raw_word>[A-Za-z,.;:<>\'-]+)(?P<end>[^A-Za-z,.;:<>-]*)$', text)
+        end_seq_match = re.search(r'(?P<lead_symbols>[^\sA-Za-z,.;:<>-]*)(?P<raw_word>[A-Za-z,.;:<>\'-]+?)(?P<end>[^A-Za-z,.;:<>-]*)$', text)
         if end_seq_match is None:  # No word to handle
             return
 
