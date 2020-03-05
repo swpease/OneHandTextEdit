@@ -39,6 +39,12 @@ letter_regex_map = {
     '-': '-'
 }
 
+capitalized_symbol_map = {
+    '<': ',',
+    '>': '.',
+    ':': ';'
+}
+
 
 def word_to_regex(word: str) -> str:
     """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
