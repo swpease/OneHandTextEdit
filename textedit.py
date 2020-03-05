@@ -1,6 +1,7 @@
 import sys
 import json
 import re
+from enum import Enum
 from typing import Optional
 
 from PySide2.QtCore import Qt
@@ -8,6 +9,11 @@ from PySide2.QtGui import QTextCursor, QKeyEvent
 from PySide2.QtWidgets import QApplication, QPlainTextEdit
 
 from regex_map import word_to_regex, capitalized_symbol_map
+
+
+class Mode(Enum):
+    INSERT = 1
+    WORDCHECK = 2
 
 
 class MyPlainTextEdit(QPlainTextEdit):
@@ -84,6 +90,13 @@ class MyPlainTextEdit(QPlainTextEdit):
                 self.process_previous_word()
 
             super().keyPressEvent(e)
+
+    def keyReleaseEvent(self, e: QKeyEvent):
+        if e.modifiers() == Qt.ControlModifier and (e.key() == Qt.Key_E or e.key() == Qt.Key_I):
+            self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
+            return
+
+        super().keyReleaseEvent(e)
 
 
 if __name__ == "__main__":

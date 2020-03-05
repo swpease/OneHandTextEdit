@@ -75,6 +75,32 @@ class TestInsertMode(unittest.TestCase):
         self.assertEqual(self.editor.textCursor().block().text(), 'the?!"\' ')
 
 
+class TestModeSwitching(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.src = 'test_words.txt'
+        cls.dest = 'test_out.json'
+        words = ["A", "a", "the", "and", "ax"]
+        with open(cls.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        _create_regex_map(cls.src, cls.dest)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.src)
+        os.remove(cls.dest)
+
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(self.dest)
+
+    def test_basic(self):
+        self.assertEqual(self.editor.mode, Mode.INSERT)
+        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+        self.assertEqual(self.editor.mode, Mode.WORDCHECK)
+        QTest.keyClick(self.editor, Qt.Key_I, modifier=Qt.ControlModifier)
+        self.assertEqual(self.editor.mode, Mode.INSERT)
+
 
 if __name__ == '__main__':
     unittest.main()
