@@ -32,24 +32,20 @@ class MyPlainTextEdit(QPlainTextEdit):
     def map_word(self, raw_word: str) -> Optional[str]:
         """
         Tries to map a string of non-whitespace chars to an actual word.
-        Handles trailing `'` `"` `?` and `!`. Leading `'` and `"` assumed already stripped.
         Handles ending `;` `.` and `,` (`a` `z` and `x`)
         Preserves first-letter capitalization.
         Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
 
-        :param raw_word: pattern ~ [A-Za-z,.;:<>\'-]+? (NB: cannot end in `'`)
+        :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$'
         :return: the default mapped word, if found. Else, None.
         """
         is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map  # Want to keep capitalization in end word.
         word = self.lowerize_symbols(raw_word)
 
-        end_stripped_match = re.match(r'(?P<end_stripped_word>.+?)[\'\"?!]*$', word)  # e.g. `'lkl'n.?!""` -> `'lkl'n.`
-        unquoted_word = end_stripped_match.group('end_stripped_word')
-
         # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
-        grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', unquoted_word)
+        grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', word)
         root = grouped_word_match.group('root')
-        possible_word = unquoted_word
+        possible_word = word
         while len(possible_word) >= len(root):
             regex: str = word_to_regex(possible_word)
             entry: Optional[Entry] = self.regex_map.get(regex)
