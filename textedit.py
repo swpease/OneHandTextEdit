@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent
 from PySide2.QtWidgets import QApplication, QPlainTextEdit
 
-from regex_map import word_to_regex, capitalized_symbol_map
+from regex_map import word_to_regex, capitalized_symbol_map, Entry
 
 
 class Mode(Enum):
@@ -52,7 +52,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         possible_word = unquoted_word
         while len(possible_word) >= len(root):
             regex: str = word_to_regex(possible_word)
-            entry: Optional[dict] = self.regex_map.get(regex)  # entry = {'default': 'foo', 'words': ['foo', 'bar]}
+            entry: Optional[Entry] = self.regex_map.get(regex)
             if entry is not None:
                 mapped_word: str = entry['default']
                 if is_capitalized:

@@ -1,6 +1,12 @@
 from collections import defaultdict
-import re
+from typing import TypedDict, List
 import json
+
+
+class Entry(TypedDict):
+    default: str
+    words: List[str]
+
 
 # Assumes default key mappings.
 letter_regex_map = {
@@ -73,7 +79,7 @@ def _create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
 
     regex_map = dict()
     for regex, words in regex_words.items():
-        regex_map[regex] = {'default': words[0], 'words': words}
+        regex_map[regex]: Entry = {'default': words[0], 'words': words}
 
     with open(dest, 'w') as f:
         json.dump(regex_map, f)
