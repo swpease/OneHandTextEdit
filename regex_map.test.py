@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from regex_map import word_to_regex, _create_regex_map
+from regex_map import word_to_regex, create_regex_map
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestRegexMapMaker(unittest.TestCase):
         os.remove(self.dest)
     
     def test_basic(self):
-        _create_regex_map(self.src, self.dest)
+        create_regex_map(self.src, self.dest)
         with open(self.dest) as f:
             output = f.readline()
         self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a", "A"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the"]}}')

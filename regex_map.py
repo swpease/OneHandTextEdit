@@ -63,7 +63,7 @@ def word_to_regex(word: str) -> str:
     return regex
 
 
-def _create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
+def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
     """
     Takes a builtin list of dictionary words and converts it like,
     e.g.: {"^[a;]$": {"default": "A", "words": ["A", "a"]}, [...]}
@@ -86,4 +86,4 @@ def _create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
 
 
 if __name__ == '__main__':
-    _create_regex_map()
+    create_regex_map()

@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QApplication, QPlainTextEdit
 from PySide2.QtTest import QTest
 
 from textedit import MyPlainTextEdit, Mode
-from regex_map import _create_regex_map
+from regex_map import create_regex_map
 
 
 class TestInsertMode(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestInsertMode(unittest.TestCase):
         with open(cls.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
-        _create_regex_map(cls.src, cls.dest)
+        create_regex_map(cls.src, cls.dest)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -84,7 +84,7 @@ class TestModeSwitching(unittest.TestCase):
         with open(cls.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
-        _create_regex_map(cls.src, cls.dest)
+        create_regex_map(cls.src, cls.dest)
 
     @classmethod
     def tearDownClass(cls) -> None:
