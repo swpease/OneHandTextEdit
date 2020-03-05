@@ -52,9 +52,17 @@ capitalized_symbol_map = {
 }
 
 
-def word_to_regex(word: str) -> str:
+def lowerize_symbols(raw_text: str) -> str:
+    """Lower-caseify words, accounting for A=< Z=> and X=: """
+    text = raw_text.lower()
+    for upper, lower in capitalized_symbol_map.items():
+        text = text.replace(upper, lower)
+    return text
+
+
+def word_to_lc_regex(word: str) -> str:
     """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
-    lc_word = word.lower()  # I want the words to be regexed case-insensitively, but remain cased for lookup.
+    lc_word = lowerize_symbols(word)  # I want the words to be regexed case-insensitively, but remain cased for lookup.
     regex = '^'
     for i in lc_word:
         regex += letter_regex_map.get(i, '[' + i + ']')  # Do I need to worry about "\" escaping for Qt?
@@ -74,7 +82,7 @@ def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
 
     regex_words = defaultdict(list)
     for word in words:
-        regex = word_to_regex(word)
+        regex = word_to_lc_regex(word)
         regex_words[regex].append(word)
 
     regex_map = dict()

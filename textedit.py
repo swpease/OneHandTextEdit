@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent
 from PySide2.QtWidgets import QApplication, QPlainTextEdit
 
-from regex_map import word_to_regex, capitalized_symbol_map, Entry
+from regex_map import word_to_lc_regex, capitalized_symbol_map, Entry
 
 
 class Mode(Enum):
@@ -23,12 +23,6 @@ class MyPlainTextEdit(QPlainTextEdit):
         with open(regex_map) as f:
             self.regex_map: dict = json.load(f)
             
-    def lowerize_symbols(self, text: str) -> str:
-        """Account for A=< Z=> and X=: """
-        for upper, lower in capitalized_symbol_map.items():
-            text = text.replace(upper, lower)
-        return text
-
     def map_word(self, raw_word: str) -> Optional[str]:
         """
         Tries to map a string of non-whitespace chars to an actual word.
@@ -40,14 +34,13 @@ class MyPlainTextEdit(QPlainTextEdit):
         :return: the default mapped word, if found. Else, None.
         """
         is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map  # Want to keep capitalization in end word.
-        word = self.lowerize_symbols(raw_word)
 
         # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
-        grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', word)
+        grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', raw_word)
         root = grouped_word_match.group('root')
-        possible_word = word
+        possible_word = raw_word
         while len(possible_word) >= len(root):
-            regex: str = word_to_regex(possible_word)
+            regex: str = word_to_lc_regex(possible_word)
             entry: Optional[Entry] = self.regex_map.get(regex)
             if entry is not None:
                 mapped_word: str = entry['default']
