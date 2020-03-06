@@ -1,7 +1,8 @@
 import unittest
 import os
+import json
 
-from regex_map import word_to_lc_regex, create_regex_map
+from regex_map import word_to_lc_regex, create_regex_map, map_word
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -17,6 +18,35 @@ class TestRegexMaker(unittest.TestCase):
 
     def test_raw_backslash(self):
         self.assertEqual(word_to_lc_regex(r'\n'), r'^[\][vn]$')
+
+
+class TestWordMapping(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.src = 'test_words.txt'
+        cls.dest = 'test_out.json'
+        words = ["A", "a", "the", "and", "ax", "it's"]
+        with open(cls.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        create_regex_map(cls.src, cls.dest)
+        with open(cls.dest) as f:
+            cls.regex_map = json.load(f)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.src)
+        os.remove(cls.dest)
+
+    def test_caps_preserved(self):
+        self.assertEqual(map_word('The', self.regex_map), 'The')
+
+    def test_missing_word(self):
+        self.assertIsNone(map_word('kwyjibo', self.regex_map))
+        self.assertIsNone(map_word('', self.regex_map))
+
+    def test_trailing_symbols(self):
+        self.assertEqual(map_word(';,.,;', self.regex_map), 'ax', msg=";, == ax while .,; are cut out")
 
 
 class TestRegexMapMaker(unittest.TestCase):

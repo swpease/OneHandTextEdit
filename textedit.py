@@ -2,13 +2,12 @@ import sys
 import json
 import re
 from enum import Enum
-from typing import Optional
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent
 from PySide2.QtWidgets import QApplication, QPlainTextEdit
 
-from regex_map import word_to_lc_regex, capitalized_symbol_map, Entry
+from regex_map import map_word
 
 
 class Mode(Enum):
@@ -23,36 +22,6 @@ class MyPlainTextEdit(QPlainTextEdit):
         with open(regex_map) as f:
             self.regex_map: dict = json.load(f)
             
-    def map_word(self, raw_word: str) -> Optional[str]:
-        """
-        Tries to map a string of non-whitespace chars to an actual word.
-        Handles ending `;` `.` and `,` (`a` `z` and `x`)
-        Preserves first-letter capitalization.
-        Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
-
-        :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$'
-        :return: the default mapped word, if found. Else, None.
-        """
-        # TODO if i want to reuse this, I should ssert the assumed regex
-        is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map  # Want to keep capitalization in end word.
-
-        # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
-        grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', raw_word)
-        root = grouped_word_match.group('root')
-        possible_word = raw_word
-        while len(possible_word) >= len(root):
-            regex: str = word_to_lc_regex(possible_word)
-            entry: Optional[Entry] = self.regex_map.get(regex)
-            if entry is not None:
-                mapped_word: str = entry['default']
-                if is_capitalized:
-                    return mapped_word.capitalize()
-                else:
-                    return mapped_word
-            else:
-                possible_word = possible_word[:-1]
-        # No matched, so return None.
-
     def process_previous_word(self):
         """Overwrites the word before the cursor with the default mapping, if said mapping exists. """
         cursor = self.textCursor()
@@ -62,7 +31,7 @@ class MyPlainTextEdit(QPlainTextEdit):
             return
 
         match_len = len(end_seq_match[0]) - len(end_seq_match.group('lead_symbols'))  # how far back to send cursor
-        word = self.map_word(end_seq_match.group('raw_word'))
+        word = map_word(end_seq_match.group('raw_word'), self.regex_map)
         if word is None:  # Word not found in regex_map dictionary
             return
 
