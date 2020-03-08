@@ -90,7 +90,10 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def keyReleaseEvent(self, e: QKeyEvent):
         if self.mode == Mode.WORDCHECK:
-            self.handle_wordcheck_key_events(e)
+            if e.modifiers() == Qt.NoModifier:
+                self.handle_wordcheck_key_events(e)
+            elif e.modifiers() != Qt.ShiftModifier:  # Eat shift-modified keys.
+                super().keyReleaseEvent(e)
         else:
             super().keyReleaseEvent(e)
 
