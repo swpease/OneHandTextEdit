@@ -110,5 +110,65 @@ class TestModeSwitching(unittest.TestCase):
         self.assertEqual(self.editor.mode, Mode.INSERT)
 
 
+class TestWordcheckMode(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.src = 'test_words.txt'
+        cls.dest = 'test_out.json'
+        words = ["A", "a", "the", "and", "ax"]
+        with open(cls.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        create_regex_map(cls.src, cls.dest)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.src)
+        os.remove(cls.dest)
+
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(self.dest)
+
+    def test_move_up(self):
+        QTest.keyClick(self.editor, Qt.Key_Return)
+        QTest.keyClick(self.editor, Qt.Key_Return)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        QTest.keyClick(self.editor, Qt.Key_K)
+        QTest.keyClick(self.editor, Qt.Key_D)
+        self.assertEqual(self.editor.textCursor().blockNumber(), 0)
+        self.assertEqual(self.editor.toPlainText(), "\n\n", msg="text modified")
+
+    def test_move_down(self):
+        QTest.keyClick(self.editor, Qt.Key_Return)
+        QTest.keyClick(self.editor, Qt.Key_Return)
+        start_cur = self.editor.textCursor()
+        start_cur.setPosition(0)
+        self.editor.setTextCursor(start_cur)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        QTest.keyClick(self.editor, Qt.Key_F)
+        QTest.keyClick(self.editor, Qt.Key_J)
+        self.assertEqual(self.editor.textCursor().blockNumber(), 2)
+        self.assertEqual(self.editor.toPlainText(), "\n\n", msg="text modified")
+
+    def test_move_left(self):
+        QTest.keyClicks(self.editor, 'the')
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        QTest.keyClick(self.editor, Qt.Key_S)
+        QTest.keyClick(self.editor, Qt.Key_H)
+        self.assertEqual(self.editor.textCursor().position(), 1)
+        self.assertEqual(self.editor.toPlainText(), "the", msg="text modified")
+
+    def test_move_right(self):
+        QTest.keyClicks(self.editor, 'the')
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        start_cur = self.editor.textCursor()
+        start_cur.setPosition(0)
+        self.editor.setTextCursor(start_cur)
+        QTest.keyClick(self.editor, Qt.Key_G)
+        QTest.keyClick(self.editor, Qt.Key_L)
+        self.assertEqual(self.editor.textCursor().position(), 2)
+        self.assertEqual(self.editor.toPlainText(), "the", msg="text modified")
+
+
 if __name__ == '__main__':
     unittest.main()

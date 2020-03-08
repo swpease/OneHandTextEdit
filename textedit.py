@@ -21,7 +21,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         self.mode = Mode.INSERT
         with open(regex_map) as f:
             self.regex_map: dict = json.load(f)
-            
+
     def process_previous_word(self):
         """Overwrites the word before the cursor with the default mapping, if said mapping exists. """
         cursor = self.textCursor()
@@ -40,19 +40,61 @@ class MyPlainTextEdit(QPlainTextEdit):
         cursor.setPosition((cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
         cursor.insertText(word)
 
-    def keyPressEvent(self, e: QKeyEvent):
-        if self.mode == Mode.INSERT:
-            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash]:  # For some reason Return is handled before kRE capturing.
-                self.process_previous_word()
+    def handle_wordcheck_key_events(self, e: QKeyEvent):
+        """
+        Remaps key events to their Wordcheck mode equivalents. Eats all events except arrow keys.
 
+        :param e: The key event to remap. Assumes e.modifiers() == Qt.NoModifier.
+        :return:
+        """
+        if e.key() in [Qt.Key_S, Qt.Key_H]:
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.NoModifier,
+                                 autorep=e.isAutoRepeat(), count=e.count())
+            QApplication.sendEvent(self, mapped_e)
+        elif e.key() in [Qt.Key_G, Qt.Key_L]:
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.NoModifier,
+                                 autorep=e.isAutoRepeat(), count=e.count())
+            QApplication.sendEvent(self, mapped_e)
+        elif e.key() in [Qt.Key_F, Qt.Key_J]:
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Down, Qt.NoModifier,
+                                 autorep=e.isAutoRepeat(), count=e.count())
+            QApplication.sendEvent(self, mapped_e)
+        elif e.key() in [Qt.Key_D, Qt.Key_K]:
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Up, Qt.NoModifier,
+                                 autorep=e.isAutoRepeat(), count=e.count())
+            QApplication.sendEvent(self, mapped_e)
+
+        elif e.key() in [Qt.Key_Right, Qt.Key_Left, Qt.Key_Up, Qt.Key_Down]:
+            if e.type() == QKeyEvent.KeyPress:
+                super().keyPressEvent(e)
+            elif e.type() == QKeyEvent.KeyRelease:
+                super().keyReleaseEvent(e)
+
+    def keyPressEvent(self, e: QKeyEvent):
+        if e.modifiers() == Qt.NoModifier:  # Could be an issue if slash is remapped to be hidden under a modifier.
+            if self.mode == Mode.INSERT:
+                if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash]:
+                    self.process_previous_word()
+                super().keyPressEvent(e)
+            elif self.mode == Mode.WORDCHECK:
+                self.handle_wordcheck_key_events(e)
+            else:
+                super().keyPressEvent(e)
+
+        elif e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
+            self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
+
+        # Eat any non-explicitly handled keypresses in this mode for now.
+        elif self.mode == Mode.WORDCHECK:  # Qt handles shortcuts (e.g. `Ctrl+q`?)
+            return
+        else:
             super().keyPressEvent(e)
 
     def keyReleaseEvent(self, e: QKeyEvent):
-        if e.modifiers() == Qt.ControlModifier and (e.key() == Qt.Key_E or e.key() == Qt.Key_I):
-            self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
-            return
-
-        super().keyReleaseEvent(e)
+        if self.mode == Mode.WORDCHECK:
+            self.handle_wordcheck_key_events(e)
+        else:
+            super().keyReleaseEvent(e)
 
 
 if __name__ == "__main__":
