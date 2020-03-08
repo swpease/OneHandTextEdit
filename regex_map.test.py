@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 
-from regex_map import word_to_lc_regex, create_regex_map, map_word
+from regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -38,15 +38,13 @@ class TestWordMapping(unittest.TestCase):
         os.remove(cls.src)
         os.remove(cls.dest)
 
-    def test_caps_preserved(self):
-        self.assertEqual(map_word('The', self.regex_map), 'The')
-
     def test_missing_word(self):
-        self.assertIsNone(map_word('kwyjibo', self.regex_map))
-        self.assertIsNone(map_word('', self.regex_map))
+        self.assertIsNone(map_word_to_entry('kwyjibo', self.regex_map))
+        self.assertIsNone(map_word_to_entry('', self.regex_map))
 
     def test_trailing_symbols(self):
-        self.assertEqual(map_word(';,.,;', self.regex_map), 'ax', msg=";, == ax while .,; are cut out")
+        self.assertEqual(map_word_to_entry(';,.,;', self.regex_map)['default'], 'ax',
+                         msg=";, == ax while .,; are cut out")
 
 
 class TestRegexMapMaker(unittest.TestCase):

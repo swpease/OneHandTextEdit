@@ -53,11 +53,10 @@ capitalized_symbol_map = {
 }
 
 
-def map_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[str]:
+def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
     Tries to map a string to an actual word.
     Handles ending `;` `.` and `,` (`a` `z` and `x`)
-    Preserves first-letter capitalization.
     Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
 
     :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$' , though I suppose this still kind of works with r'.*'
@@ -67,8 +66,6 @@ def map_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[str]:
     if len(raw_word) == 0:
         return
 
-    is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map
-
     # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
     grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', raw_word)
     root = grouped_word_match.group('root')
@@ -77,11 +74,7 @@ def map_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[str]:
         regex: str = word_to_lc_regex(possible_word)
         entry: Optional[Entry] = regex_map.get(regex)
         if entry is not None:
-            mapped_word: str = entry['default']
-            if is_capitalized:
-                return mapped_word.capitalize()
-            else:
-                return mapped_word
+            return entry
         else:
             possible_word = possible_word[:-1]
     # No matched, so return None.
