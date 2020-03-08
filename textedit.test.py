@@ -151,23 +151,23 @@ class TestWordcheckMode(unittest.TestCase):
         self.assertEqual(self.editor.toPlainText(), "\n\n", msg="text modified")
 
     def test_move_left(self):
-        QTest.keyClicks(self.editor, 'the')
+        QTest.keyClicks(self.editor, 'the box')
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
         QTest.keyClick(self.editor, Qt.Key_S)
         QTest.keyClick(self.editor, Qt.Key_H)
-        self.assertEqual(self.editor.textCursor().position(), 1)
-        self.assertEqual(self.editor.toPlainText(), "the", msg="text modified")
+        self.assertEqual(self.editor.textCursor().position(), 0)
+        self.assertEqual(self.editor.toPlainText(), "the box", msg="text modified")
 
     def test_move_right(self):
-        QTest.keyClicks(self.editor, 'the')
+        QTest.keyClicks(self.editor, 'the box is')
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
         start_cur = self.editor.textCursor()
         start_cur.setPosition(0)
         self.editor.setTextCursor(start_cur)
         QTest.keyClick(self.editor, Qt.Key_G)
         QTest.keyClick(self.editor, Qt.Key_L)
-        self.assertEqual(self.editor.textCursor().position(), 2)
-        self.assertEqual(self.editor.toPlainText(), "the", msg="text modified")
+        self.assertEqual(self.editor.textCursor().position(), 8)
+        self.assertEqual(self.editor.toPlainText(), "the box is", msg="text modified")
 
 
 if __name__ == '__main__':

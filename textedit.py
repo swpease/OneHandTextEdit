@@ -48,11 +48,11 @@ class MyPlainTextEdit(QPlainTextEdit):
         :return:
         """
         if e.key() in [Qt.Key_S, Qt.Key_H]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.NoModifier,
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.AltModifier,
                                  autorep=e.isAutoRepeat(), count=e.count())
             QApplication.sendEvent(self, mapped_e)
         elif e.key() in [Qt.Key_G, Qt.Key_L]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.NoModifier,
+            mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.AltModifier,
                                  autorep=e.isAutoRepeat(), count=e.count())
             QApplication.sendEvent(self, mapped_e)
         elif e.key() in [Qt.Key_F, Qt.Key_J]:
@@ -71,22 +71,20 @@ class MyPlainTextEdit(QPlainTextEdit):
                 super().keyReleaseEvent(e)
 
     def keyPressEvent(self, e: QKeyEvent):
-        if e.modifiers() == Qt.NoModifier:  # Could be an issue if slash is remapped to be hidden under a modifier.
-            if self.mode == Mode.INSERT:
-                if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash]:
-                    self.process_previous_word()
-                super().keyPressEvent(e)
-            elif self.mode == Mode.WORDCHECK:
-                self.handle_wordcheck_key_events(e)
-            else:
-                super().keyPressEvent(e)
-
-        elif e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
+        if e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
             self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
 
-        # Eat any non-explicitly handled keypresses in this mode for now.
-        elif self.mode == Mode.WORDCHECK:  # Qt handles shortcuts (e.g. `Ctrl+q`?)
-            return
+        elif self.mode == Mode.INSERT:
+            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
+                self.process_previous_word()
+            super().keyPressEvent(e)
+
+        elif self.mode == Mode.WORDCHECK:
+            if e.modifiers() == Qt.NoModifier:  # Could be an issue if slash is remapped to be hidden under a modifier.
+                self.handle_wordcheck_key_events(e)
+            elif e.modifiers() != Qt.ShiftModifier:  # Eat shift-modified keys.
+                super().keyPressEvent(e)
+
         else:
             super().keyPressEvent(e)
 
