@@ -10,25 +10,27 @@ from textedit import MyPlainTextEdit, Mode
 from regex_map import create_regex_map
 
 
+src = 'test_words.txt'
+dest = 'test_out.json'
+
+
+def setUpModule():
+    app = QApplication([])
+    words = ["A", "a", "the", "and", "ax", "it's"]
+    with open(src, 'w') as f:
+        for word in words:
+            f.write("%s\n" % word)
+    create_regex_map(src, dest)
+
+
+def tearDownModule():
+    os.remove(src)
+    os.remove(dest)
+
+
 class TestInsertMode(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        app = QApplication([])
-        cls.src = 'test_words.txt'
-        cls.dest = 'test_out.json'
-        words = ["A", "a", "the", "and", "ax", "it's"]
-        with open(cls.src, 'w') as f:
-            for word in words:
-                f.write("%s\n" % word)
-        create_regex_map(cls.src, cls.dest)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        os.remove(cls.src)
-        os.remove(cls.dest)
-
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(self.dest)
+        self.editor = MyPlainTextEdit(dest)
 
     def test_basic(self):
         # e: QKeyEvent = QKeyEvent(QEvent.KeyPress, Qt.Key_Space, Qt.NoModifier)
@@ -84,23 +86,8 @@ class TestInsertMode(unittest.TestCase):
 
 
 class TestModeSwitching(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.src = 'test_words.txt'
-        cls.dest = 'test_out.json'
-        words = ["A", "a", "the", "and", "ax"]
-        with open(cls.src, 'w') as f:
-            for word in words:
-                f.write("%s\n" % word)
-        create_regex_map(cls.src, cls.dest)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        os.remove(cls.src)
-        os.remove(cls.dest)
-
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(self.dest)
+        self.editor = MyPlainTextEdit(dest)
 
     def test_basic(self):
         self.assertEqual(self.editor.mode, Mode.INSERT)
@@ -110,24 +97,9 @@ class TestModeSwitching(unittest.TestCase):
         self.assertEqual(self.editor.mode, Mode.INSERT)
 
 
-class TestWordcheckMode(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.src = 'test_words.txt'
-        cls.dest = 'test_out.json'
-        words = ["A", "a", "the", "and", "ax"]
-        with open(cls.src, 'w') as f:
-            for word in words:
-                f.write("%s\n" % word)
-        create_regex_map(cls.src, cls.dest)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        os.remove(cls.src)
-        os.remove(cls.dest)
-
+class TestWordcheckModeMovement(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(self.dest)
+        self.editor = MyPlainTextEdit(dest)
 
     def test_move_up(self):
         QTest.keyClick(self.editor, Qt.Key_Return)
