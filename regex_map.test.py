@@ -46,6 +46,11 @@ class TestWordMapping(unittest.TestCase):
         self.assertEqual(map_word_to_entry(';,.,;', self.regex_map)['default'], 'ax',
                          msg=";, == ax while .,; are cut out")
 
+    def test_deepcopy(self):
+        entry = map_word_to_entry(';,.,;', self.regex_map)
+        entry['words'].append('hi')
+        self.assertNotEqual(entry, map_word_to_entry(';,.,;', self.regex_map))
+
 
 class TestRegexMapMaker(unittest.TestCase):
     def setUp(self) -> None:

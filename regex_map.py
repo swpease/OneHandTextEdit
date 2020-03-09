@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import TypedDict, List, Optional, Dict
 import json
 import re
+import copy
 
 
 class Entry(TypedDict):
@@ -55,13 +56,13 @@ capitalized_symbol_map = {
 
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
-    Tries to map a string to an actual word.
+    Tries to map a string to an Entry.
     Handles ending `;` `.` and `,` (`a` `z` and `x`)
     Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
 
     :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$' , though I suppose this still kind of works with r'.*'
-    :param regex_map: The dictionary of words grouped by their regexes, to draw from.
-    :return: the default mapped word, if found. Else, None.
+    :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
+    :return: A deep copy of the Entry, if it exists.
     """
     if len(raw_word) == 0:
         return
@@ -74,7 +75,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
         regex: str = word_to_lc_regex(possible_word)
         entry: Optional[Entry] = regex_map.get(regex)
         if entry is not None:
-            return entry
+            return copy.deepcopy(entry)
         else:
             possible_word = possible_word[:-1]
     # No matched, so return None.
