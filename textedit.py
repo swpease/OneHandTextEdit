@@ -79,9 +79,9 @@ class MyPlainTextEdit(QPlainTextEdit):
 
             self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(front_word))
             self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
-            self.highlight_word(self.wordcheck_cursor, word, self.wordcheck_entry)
+            self.highlight_word(self.wordcheck_cursor, self.wordcheck_entry)
 
-    def highlight_word(self, cursor: QTextCursor, word: str, entry: Optional[Entry]):
+    def highlight_word(self, cursor: QTextCursor, entry: Optional[Entry]):
         selection = QTextEdit.ExtraSelection()
         normal_color = QColor(Qt.yellow).lighter()
         missing_color = QColor(Qt.magenta).lighter()
@@ -90,7 +90,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         if entry is None:
             selection.format.setBackground(missing_color)
         # TODO edge cases of capitals.
-        elif entry['default'] == word:
+        elif entry['default'] == cursor.selection().toPlainText():
             selection.format.setBackground(default_color)
         else:
             selection.format.setBackground(normal_color)
