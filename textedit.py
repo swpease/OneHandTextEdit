@@ -32,6 +32,12 @@ class MyPlainTextEdit(QPlainTextEdit):
             cursor = self.textCursor()
             # self.wordcheck_word = self.get_word_under_cursor(self.wordcheck_cursor)
     def get_word_under_cursor(self, cursor: QTextCursor):
+        """
+        A word is ~ r'[A-Za-z\'-]+', where leading / trailing `'` are stripped or blocking
+        e.g. "'h'i'" w/ cursor at 0 returns ("", ""), cursor at 1 returns ("", "h'i")
+        :param cursor:
+        :return: Tuple(front part, back part)
+        """
         front_text = cursor.block().text()[:cursor.positionInBlock()]
         back_text = cursor.block().text()[cursor.positionInBlock():]
 
@@ -60,6 +66,7 @@ class MyPlainTextEdit(QPlainTextEdit):
                 back_word = pre_back_word
         else:
             back_word = pre_back_word
+
         return (front_word, back_word)
 
     def handle_cursor_position_changed(self):
