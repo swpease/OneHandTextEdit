@@ -72,6 +72,10 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def handle_cursor_position_changed(self):
         if self.mode == Mode.WORDCHECK:
+            # Same word spot.
+            if self.wordcheck_cursor.anchor() <= self.textCursor().position() <= self.wordcheck_cursor.position():
+                return
+
             self.wordcheck_cursor = self.textCursor()
             front_word, back_word = self.get_word_under_cursor(self.wordcheck_cursor)
             word = front_word + back_word
