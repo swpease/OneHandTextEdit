@@ -21,16 +21,17 @@ class MyPlainTextEdit(QPlainTextEdit):
         super().__init__()  # Pass parent?
 
         self.mode = Mode.INSERT
+        self.wordcheck_cursor: QTextCursor = self.textCursor()
+        self.wordcheck_entry: Optional[Entry] = None
 
         self.cursorPositionChanged.connect(self.handle_cursor_position_changed)
 
         with open(regex_map) as f:
             self.regex_map: dict = json.load(f)
 
-    def handle_cursor_position_changed(self):
-        if self.mode == Mode.WORDCHECK:
-            cursor = self.textCursor()
-            # self.wordcheck_word = self.get_word_under_cursor(self.wordcheck_cursor)
+    def next_word_replace(self):
+        pass
+
     def get_word_under_cursor(self, cursor: QTextCursor):
         """
         A word is ~ r'[A-Za-z\'-]+', where leading / trailing `'` are stripped or blocking
@@ -71,14 +72,14 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def handle_cursor_position_changed(self):
         if self.mode == Mode.WORDCHECK:
-            cursor = self.textCursor()
-            front_word, back_word = self.get_word_under_cursor(cursor)
+            self.wordcheck_cursor = self.textCursor()
+            front_word, back_word = self.get_word_under_cursor(self.wordcheck_cursor)
             word = front_word + back_word
-            entry = map_word_to_entry(word, self.regex_map)
+            self.wordcheck_entry = map_word_to_entry(word, self.regex_map)
 
-            cursor.setPosition(cursor.position() - len(front_word))
-            cursor.setPosition((cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
-            self.highlight_word(cursor, word, entry)
+            self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(front_word))
+            self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
+            self.highlight_word(self.wordcheck_cursor, word, self.wordcheck_entry)
 
     def highlight_word(self, cursor: QTextCursor, word: str, entry: Optional[Entry]):
         selection = QTextEdit.ExtraSelection()
@@ -145,6 +146,9 @@ class MyPlainTextEdit(QPlainTextEdit):
             mapped_e = QKeyEvent(e.type(), Qt.Key_Up, Qt.NoModifier,
                                  autorep=e.isAutoRepeat(), count=e.count())
             QApplication.sendEvent(self, mapped_e)
+
+        elif e.key() in [Qt.Key_R, Qt.Key_U] and e.type() == QKeyEvent.KeyPress:
+            self.next_word_replace()
 
         elif e.key() in [Qt.Key_Right, Qt.Key_Left, Qt.Key_Up, Qt.Key_Down]:
             if e.type() == QKeyEvent.KeyPress:
