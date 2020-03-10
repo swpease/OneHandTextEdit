@@ -47,19 +47,19 @@ class MyPlainTextEdit(QPlainTextEdit):
             if len(pre_back_word) == 0:
                 # strip trailing quotes
                 front_match = re.search(r'^(?P<front>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_front_word)
-                # if len(front_match.group('junk')) > 0:  # Not inside a word.
-                #     return ''
-                # else:
-                front_word = front_match.group('front')
+                if len(front_match.group('junk')) > 0:  # Not inside a word.
+                    front_word = ''
+                else:
+                    front_word = front_match.group('front')
             else:
                 front_word = raw_front_word
             if len(front_word) == 0:
                 # strip leading quotes
                 back_match = re.search(r'(?P<junk>\'*)(?P<back>[A-Za-z,.;:<>\'-]*?)$', pre_back_word)
-                # if len(back_match.group('junk')) > 0:  # Not inside a word.
-                #     return ''
-                # else:
-                back_word = back_match.group('back')
+                if len(back_match.group('junk')) > 0:  # Not inside a word.
+                    back_word = ''
+                else:
+                    back_word = back_match.group('back')
             else:
                 back_word = pre_back_word
             word = front_word + back_word
