@@ -2,12 +2,13 @@ import sys
 import json
 import re
 from enum import Enum
+from typing import Optional
 
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QTextCursor, QKeyEvent
-from PySide2.QtWidgets import QApplication, QPlainTextEdit
+from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
+from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from regex_map import map_word_to_entry, capitalized_symbol_map
+from regex_map import map_word_to_entry, capitalized_symbol_map, Entry
 
 
 class Mode(Enum):
@@ -18,9 +19,77 @@ class Mode(Enum):
 class MyPlainTextEdit(QPlainTextEdit):
     def __init__(self, regex_map: str = 'regex_map.json'):
         super().__init__()  # Pass parent?
+
         self.mode = Mode.INSERT
+
+        self.cursorPositionChanged.connect(self.handle_cursor_position_changed)
+
         with open(regex_map) as f:
             self.regex_map: dict = json.load(f)
+
+    def handle_cursor_position_changed(self):
+        if self.mode == Mode.WORDCHECK:
+            cursor = self.textCursor()
+            # self.wordcheck_word = self.get_word_under_cursor(self.wordcheck_cursor)
+            front_text = cursor.block().text()[:cursor.positionInBlock()]
+            back_text = cursor.block().text()[cursor.positionInBlock():]
+
+            # strip leading quotes
+            raw_front_match = re.search(r'(?P<junk>\'*)(?P<raw_front>[A-Za-z,.;:<>\'-]*?)$', front_text)
+            raw_front_word = raw_front_match.group('raw_front')
+            # strip trailing quotes
+            raw_back_match = re.search(r'^(?P<raw_back>[A-Za-z,.;:<>\'-]*)', back_text)
+            raw_back_word = raw_back_match.group('raw_back')
+            pre_back_match = re.search(r'^(?P<pre_back>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_back_word)
+            pre_back_word = pre_back_match.group('pre_back')
+
+            # TODO: refactor.
+            if len(pre_back_word) == 0:
+                # strip trailing quotes
+                front_match = re.search(r'^(?P<front>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_front_word)
+                # if len(front_match.group('junk')) > 0:  # Not inside a word.
+                #     return ''
+                # else:
+                front_word = front_match.group('front')
+            else:
+                front_word = raw_front_word
+            if len(front_word) == 0:
+                # strip leading quotes
+                back_match = re.search(r'(?P<junk>\'*)(?P<back>[A-Za-z,.;:<>\'-]*?)$', pre_back_word)
+                # if len(back_match.group('junk')) > 0:  # Not inside a word.
+                #     return ''
+                # else:
+                back_word = back_match.group('back')
+            else:
+                back_word = pre_back_word
+            word = front_word + back_word
+            entry = map_word_to_entry(word, self.regex_map)
+
+            if len(front_word) == 0:
+                delta = len(back_match.group('junk'))
+            else:
+                delta = -1 * len(raw_front_word)
+            cursor.setPosition(cursor.position() + delta)
+            cursor.setPosition((cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
+            self.highlight_word(cursor, word, entry)
+
+    def highlight_word(self, cursor: QTextCursor, word: str, entry: Optional[Entry]):
+        selection = QTextEdit.ExtraSelection()
+        normal_color = QColor(Qt.yellow).lighter()
+        missing_color = QColor(Qt.magenta).lighter()
+        default_color = QColor(Qt.green).lighter()
+
+        if entry is None:
+            selection.format.setBackground(missing_color)
+        # TODO edge cases of capitals.
+        elif entry['default'] == word:
+            selection.format.setBackground(default_color)
+        else:
+            selection.format.setBackground(normal_color)
+
+        selection.cursor = cursor
+
+        self.setExtraSelections([selection])
 
     def process_previous_word(self):
         """Overwrites the word before the cursor with the default mapping, if said mapping exists. """

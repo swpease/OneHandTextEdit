@@ -142,5 +142,54 @@ class TestWordcheckModeMovement(unittest.TestCase):
         self.assertEqual(self.editor.toPlainText(), "the box is", msg="text modified")
 
 
+class TestWordcheckModeHighlighting(unittest.TestCase):
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(dest)
+
+    def test_highlighting_colors_different(self):
+        QTest.keyClicks(self.editor, 'a i a')  # Don't coerce ending `a`
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        default_col = cur.charFormat().background().color().getRgb()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+
+        selection = self.editor.extraSelections()[0]
+        col0 = selection.format.background().color().getRgb()
+        self.assertNotEqual(default_col, col0)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(1)
+        self.editor.setTextCursor(cur)
+        selection = self.editor.extraSelections()[0]
+        col1 = selection.format.background().color().getRgb()
+        self.assertEqual(col0, col1)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(2)
+        self.editor.setTextCursor(cur)
+        selection = self.editor.extraSelections()[0]
+        col2 = selection.format.background().color().getRgb()
+        self.assertNotEqual(col0, col2)
+        self.assertNotEqual(default_col, col2)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(4)
+        self.editor.setTextCursor(cur)
+        selection = self.editor.extraSelections()[0]
+        col4 = selection.format.background().color().getRgb()
+        self.assertNotEqual(col0, col4)
+        self.assertNotEqual(col2, col4)
+        self.assertNotEqual(default_col, col4)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(5)
+        self.editor.setTextCursor(cur)
+        selection = self.editor.extraSelections()[0]
+        col5 = selection.format.background().color().getRgb()
+        self.assertEqual(col4, col5)
+
+
 if __name__ == '__main__':
     unittest.main()
