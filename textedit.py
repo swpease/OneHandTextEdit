@@ -31,45 +31,45 @@ class MyPlainTextEdit(QPlainTextEdit):
         if self.mode == Mode.WORDCHECK:
             cursor = self.textCursor()
             # self.wordcheck_word = self.get_word_under_cursor(self.wordcheck_cursor)
-            front_text = cursor.block().text()[:cursor.positionInBlock()]
-            back_text = cursor.block().text()[cursor.positionInBlock():]
+    def get_word_under_cursor(self, cursor: QTextCursor):
+        front_text = cursor.block().text()[:cursor.positionInBlock()]
+        back_text = cursor.block().text()[cursor.positionInBlock():]
 
-            # strip leading quotes
-            raw_front_match = re.search(r'(?P<junk>\'*)(?P<raw_front>[A-Za-z,.;:<>\'-]*?)$', front_text)
-            raw_front_word = raw_front_match.group('raw_front')
-            # strip trailing quotes
-            raw_back_match = re.search(r'^(?P<raw_back>[A-Za-z,.;:<>\'-]*)', back_text)
-            raw_back_word = raw_back_match.group('raw_back')
-            pre_back_match = re.search(r'^(?P<pre_back>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_back_word)
-            pre_back_word = pre_back_match.group('pre_back')
+        # strip leading quotes
+        raw_front_match = re.search(r'(?P<junk>\'*)(?P<raw_front>[A-Za-z,.;:<>\'-]*?)$', front_text)
+        raw_front_word = raw_front_match.group('raw_front')
+        # strip trailing quotes
+        raw_back_match = re.search(r'^(?P<raw_back>[A-Za-z,.;:<>\'-]*)', back_text)
+        raw_back_word = raw_back_match.group('raw_back')
+        pre_back_match = re.search(r'^(?P<pre_back>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_back_word)
+        pre_back_word = pre_back_match.group('pre_back')
 
-            # TODO: refactor.
-            if len(pre_back_word) == 0:
-                # strip trailing quotes
-                front_match = re.search(r'^(?P<front>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_front_word)
-                if len(front_match.group('junk')) > 0:  # Not inside a word.
-                    front_word = ''
-                else:
-                    front_word = front_match.group('front')
+        if len(pre_back_word) == 0:
+            end_quotes_match = re.search(r'(?P<end_quotes>\'*)$', raw_front_word)
+            if len(end_quotes_match.group('end_quotes')) > 0:  # Not inside a word.
+                front_word = ''
             else:
                 front_word = raw_front_word
-            if len(front_word) == 0:
-                # strip leading quotes
-                back_match = re.search(r'(?P<junk>\'*)(?P<back>[A-Za-z,.;:<>\'-]*?)$', pre_back_word)
-                if len(back_match.group('junk')) > 0:  # Not inside a word.
-                    back_word = ''
-                else:
-                    back_word = back_match.group('back')
+        else:
+            front_word = raw_front_word
+        if len(front_word) == 0:
+            lead_quotes_match = re.search(r'^(?P<lead_quotes>\'*)', pre_back_word)
+            if len(lead_quotes_match.group('lead_quotes')) > 0:  # Not inside a word.
+                back_word = ''
             else:
                 back_word = pre_back_word
+        else:
+            back_word = pre_back_word
+        return (front_word, back_word)
+
+    def handle_cursor_position_changed(self):
+        if self.mode == Mode.WORDCHECK:
+            cursor = self.textCursor()
+            front_word, back_word = self.get_word_under_cursor(cursor)
             word = front_word + back_word
             entry = map_word_to_entry(word, self.regex_map)
 
-            if len(front_word) == 0:
-                delta = len(back_match.group('junk'))
-            else:
-                delta = -1 * len(raw_front_word)
-            cursor.setPosition(cursor.position() + delta)
+            cursor.setPosition(cursor.position() - len(front_word))
             cursor.setPosition((cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
             self.highlight_word(cursor, word, entry)
 
