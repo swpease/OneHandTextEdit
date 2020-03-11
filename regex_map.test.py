@@ -51,7 +51,7 @@ class TestRegexMapMaker(unittest.TestCase):
     def setUp(self) -> None:
         self.src = 'test_words.txt'
         self.dest = 'test_out.json'
-        words = ["a", "A", "the"]
+        words = ["a", "A", "the", "thi"]
         with open(self.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
@@ -64,7 +64,7 @@ class TestRegexMapMaker(unittest.TestCase):
         create_regex_map(self.src, self.dest)
         with open(self.dest) as f:
             output = f.readline()
-        self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a", "A"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the"]}}')
+        self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the", "thi"]}}')
 
 
 if __name__ == '__main__':

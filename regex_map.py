@@ -102,7 +102,7 @@ def word_to_lc_regex(word: str) -> str:
 def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
     """
     Takes a builtin list of dictionary words and converts it like,
-    e.g.: {"^[a;]$": {"default": "A", "words": ["A", "a"]}, [...]}
+    e.g.: {"^[a;][vn]$": {"default": "an", "words": ["an", "av"]}, [...]}
     then dumps to a big json file.
     """
     with open(src) as f:
@@ -110,8 +110,9 @@ def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
 
     regex_words = defaultdict(list)
     for word in words:
-        regex = word_to_lc_regex(word)
-        regex_words[regex].append(word)
+        if word.islower():
+            regex = word_to_lc_regex(word)
+            regex_words[regex].append(word)
 
     regex_map = dict()
     for regex, words in regex_words.items():
