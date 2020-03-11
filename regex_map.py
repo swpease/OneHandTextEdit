@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import TypedDict, List, Optional, Dict
 import json
 import re
+import os
 import copy
 
 
@@ -138,4 +139,7 @@ def create_regex_map(src: List, keep_capitals: List[bool], dest='regex_map.json'
 
 
 if __name__ == '__main__':
-    create_regex_map(['/usr/share/dict/words'], [False])
+    #  src = https://en.wiktionary.org/wiki/Wiktionary:Frequency_lists/Contemporary_fiction (Mar 2020)
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    common_words_path = os.path.join(dir_path, "common_words.txt")
+    create_regex_map([common_words_path, '/usr/share/dict/words', '/usr/share/dict/propernames'], [True, False, True])
