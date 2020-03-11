@@ -16,7 +16,7 @@ dest = 'test_out.json'
 
 def setUpModule():
     app = QApplication([])
-    words = ["A", "a", "the", "and", "ax", "it's", "den", "din", "ken"]
+    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken"]
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
@@ -40,22 +40,22 @@ class TestInsertMode(unittest.TestCase):
         self.assertEqual(self.editor.textCursor().block().text(), "z")
 
     def test_word_replace_trigger(self):
-        QTest.keyClicks(self.editor, 'a')
-        self.assertEqual(self.editor.textCursor().block().text(), "a", msg="plain a stays a")
+        QTest.keyClicks(self.editor, 'i')
+        self.assertEqual(self.editor.textCursor().block().text(), "i", msg="plain i stays i")
         self.editor.document().clear()
-        QTest.keyClicks(self.editor, 'A')
-        self.assertEqual(self.editor.textCursor().block().text(), "A", msg="plain A stays A")
+        QTest.keyClicks(self.editor, 'e')
+        self.assertEqual(self.editor.textCursor().block().text(), "e", msg="plain e stays e")
         self.editor.document().clear()
-        # for whatever reason, python puts A before a, so A is default.
-        QTest.keyClicks(self.editor, 'a ')
-        self.assertEqual(self.editor.textCursor().block().text(), "A ", msg="space bar coersion")
+        # for whatever reason, python puts e before i, so e is default.
+        QTest.keyClicks(self.editor, 'i ')
+        self.assertEqual(self.editor.textCursor().block().text(), "e ", msg="space bar coersion")
         self.editor.document().clear()
-        QTest.keyClicks(self.editor, 'a')
+        QTest.keyClicks(self.editor, 'i')
         QTest.keyClick(self.editor, Qt.Key_Return)
-        self.assertEqual(self.editor.textCursor().block().previous().text(), "A", msg="return btn coersion")
+        self.assertEqual(self.editor.textCursor().block().previous().text(), "e", msg="return btn coersion")
         self.editor.document().clear()
-        QTest.keyClicks(self.editor, 'a/')
-        self.assertEqual(self.editor.textCursor().block().text(), "A/", msg="slash coersion")
+        QTest.keyClicks(self.editor, 'i/')
+        self.assertEqual(self.editor.textCursor().block().text(), "e/", msg="slash coersion")
 
     def test_capitalization_preservation(self):
         QTest.keyClicks(self.editor, 'And ')
@@ -147,7 +147,7 @@ class TestWordcheckModeHighlighting(unittest.TestCase):
         self.editor = MyPlainTextEdit(dest)
 
     def test_highlighting_colors_different(self):
-        QTest.keyClicks(self.editor, 'a i a')  # Don't coerce ending `a`
+        QTest.keyClicks(self.editor, 'i x i')  # Don't coerce ending `i`
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
 
         cur = self.editor.textCursor()
@@ -196,7 +196,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
         self.editor = MyPlainTextEdit(dest)
 
     def test_missing_word(self):
-        text = 'jkljkl A den '
+        text = 'jkljkl e den '
         QTest.keyClicks(self.editor, text)
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
 
@@ -209,8 +209,8 @@ class TestWordcheckModeCycling(unittest.TestCase):
         self.assertEqual(text, new_text)
 
     def test_cycling(self):
-        text = 'A den '
-        alt_text = 'a den '
+        text = 'e den '
+        alt_text = 'i den '
         QTest.keyClicks(self.editor, text)
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
 
@@ -225,7 +225,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
         new_text = self.editor.toPlainText()
         selection = self.editor.extraSelections()[0]
         col1 = selection.format.background().color().getRgb()
-        self.assertEqual(alt_text, new_text, msg="A to a")
+        self.assertEqual(alt_text, new_text, msg="e to i")
         self.assertNotEqual(col1, default_col, msg="non-default color")
         self.assertNotEqual(col1, col0, msg="changed color")
 
@@ -233,12 +233,12 @@ class TestWordcheckModeCycling(unittest.TestCase):
         new_text = self.editor.toPlainText()
         selection = self.editor.extraSelections()[0]
         col2 = selection.format.background().color().getRgb()
-        self.assertEqual(text, new_text, msg="a to A")
+        self.assertEqual(text, new_text, msg="i to e")
         self.assertEqual(col2, col0, msg="back to same color")
 
     def test_index_preservation(self):
-        text = 'A den '
-        alt_text = 'a den '
+        text = 'e den '
+        alt_text = 'i den '
         QTest.keyClicks(self.editor, text)
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
 
@@ -248,7 +248,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
 
         QTest.keyClick(self.editor, Qt.Key_R)
         new_text = self.editor.toPlainText()
-        self.assertEqual(alt_text, new_text, msg="A to a")
+        self.assertEqual(alt_text, new_text, msg="e to i")
 
         # Move to other word and back.
         cur = self.editor.textCursor()
@@ -261,7 +261,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
 
         QTest.keyClick(self.editor, Qt.Key_R)
         new_text = self.editor.toPlainText()
-        self.assertEqual(text, new_text, msg="a to A")
+        self.assertEqual(text, new_text, msg="i to e")
 
 
 if __name__ == '__main__':
