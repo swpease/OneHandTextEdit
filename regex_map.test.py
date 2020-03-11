@@ -29,7 +29,7 @@ class TestWordMapping(unittest.TestCase):
         with open(cls.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
-        create_regex_map(cls.src, cls.dest)
+        create_regex_map([cls.src], [False], cls.dest)
         with open(cls.dest) as f:
             cls.regex_map = json.load(f)
 
@@ -54,22 +54,33 @@ class TestWordMapping(unittest.TestCase):
 
 class TestRegexMapMaker(unittest.TestCase):
     def setUp(self) -> None:
-        self.src = 'test_words.txt'
+        self.src1 = 'test_words.txt'
+        self.src2 = 'test_words2.txt'
+        self.src3 = 'test_words3.txt'
         self.dest = 'test_out.json'
-        words = ["a", "A", "the", "thi"]
-        with open(self.src, 'w') as f:
-            for word in words:
+        words1 = ["a", "A", "the", "thi"]
+        words2 = ["B"]
+        words3 = ["a"]
+        with open(self.src1, 'w') as f:
+            for word in words1:
+                f.write("%s\n" % word)
+        with open(self.src2, 'w') as f:
+            for word in words2:
+                f.write("%s\n" % word)
+        with open(self.src3, 'w') as f:
+            for word in words3:
                 f.write("%s\n" % word)
 
     def tearDown(self) -> None:
-        os.remove(self.src)
+        for f in [self.src1, self.src2, self.src3]:
+            os.remove(f)
         os.remove(self.dest)
     
     def test_basic(self):
-        create_regex_map(self.src, self.dest)
+        create_regex_map([self.src1, self.src2, self.src3], [False, True], self.dest)
         with open(self.dest) as f:
             output = f.readline()
-        self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the", "thi"]}}')
+        self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the", "thi"]}, "^[b]$": {"default": "B", "words": ["B"]}}')
 
 
 if __name__ == '__main__':

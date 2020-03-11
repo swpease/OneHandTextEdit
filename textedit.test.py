@@ -20,7 +20,7 @@ def setUpModule():
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
-    create_regex_map(src, dest)
+    create_regex_map([src], [False], dest)
 
 
 def tearDownModule():

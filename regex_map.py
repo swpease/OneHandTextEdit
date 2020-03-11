@@ -100,20 +100,34 @@ def word_to_lc_regex(word: str) -> str:
     return regex
 
 
-def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
+def create_regex_map(src: List, keep_capitals: List[bool], dest='regex_map.json'):
     """
-    Takes a builtin list of dictionary words and converts it like,
+    Takes a list of lists of dictionary words and converts it like,
     e.g.: {"^[a;][vn]$": {"default": "an", "words": ["an", "av"]}, [...]}
     then dumps to a big json file.
+
+    :param src: List of source files of "{word}\n". Put in order of priority (first mapped word set as Entry default).
+    :param keep_capitals: Defaults to / padded with False. Linked by index to src List.
+    :param dest: Output file name.
+    :return:
     """
-    with open(src) as f:
-        words = [line.rstrip() for line in f]
+    len_diff = len(src) - len(keep_capitals)
+    if len_diff > 0:
+        keep_capitals.extend([False] * len_diff)
+    words = []
+
+    for i in range(len(src)):
+        with open(src[i]) as f:
+            all_words = [line.rstrip() for line in f]
+            if keep_capitals[i]:
+                words.extend([wd for wd in all_words if wd not in words])
+            else:
+                words.extend([wd for wd in all_words if wd.islower() and wd not in words])
 
     regex_words = defaultdict(list)
     for word in words:
-        if word.islower():
-            regex = word_to_lc_regex(word)
-            regex_words[regex].append(word)
+        regex = word_to_lc_regex(word)
+        regex_words[regex].append(word)
 
     regex_map = dict()
     for regex, words in regex_words.items():
@@ -124,4 +138,4 @@ def create_regex_map(src='/usr/share/dict/words', dest='regex_map.json'):
 
 
 if __name__ == '__main__':
-    create_regex_map()
+    create_regex_map(['/usr/share/dict/words'], [False])
