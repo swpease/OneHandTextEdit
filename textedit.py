@@ -23,6 +23,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         self.mode = Mode.INSERT
         self.wordcheck_cursor: QTextCursor = self.textCursor()
         self.wordcheck_entry: Optional[Entry] = None
+        self.entry_idx = 0
 
         self.cursorPositionChanged.connect(self.handle_cursor_position_changed)
 
@@ -30,7 +31,21 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.regex_map: dict = json.load(f)
 
     def next_word_replace(self):
-        pass
+        next_word = self.wordcheck_entry['words'][self.entry_idx % len(self.wordcheck_entry['words'])]
+        self.wordcheck_cursor.insertText(next_word)
+        self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(next_word))
+        self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(next_word)), mode=QTextCursor.KeepAnchor)
+        self.highlight_word(self.wordcheck_cursor, self.wordcheck_entry)
+
+    def correct_index(self):
+        """Pickup where you left off so the list cycling is sane."""
+        if self.wordcheck_entry is not None:
+            try:
+                self.entry_idx = self.wordcheck_entry['words'].index(self.wordcheck_cursor.selection().toPlainText())
+            except ValueError as e:
+                self.entry_idx = 0
+        else:
+            self.entry_idx = 0
 
     def get_word_under_cursor(self, cursor: QTextCursor):
         """
@@ -84,6 +99,7 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(front_word))
             self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
             self.highlight_word(self.wordcheck_cursor, self.wordcheck_entry)
+            self.correct_index()
 
     def highlight_word(self, cursor: QTextCursor, entry: Optional[Entry]):
         selection = QTextEdit.ExtraSelection()
@@ -152,7 +168,14 @@ class MyPlainTextEdit(QPlainTextEdit):
             QApplication.sendEvent(self, mapped_e)
 
         elif e.key() in [Qt.Key_R, Qt.Key_U] and e.type() == QKeyEvent.KeyPress:
-            self.next_word_replace()
+            if self.wordcheck_entry is not None:
+                self.entry_idx += 1
+                self.next_word_replace()
+        elif e.key() in [Qt.Key_E, Qt.Key_I] and e.type() == QKeyEvent.KeyPress:
+            if self.wordcheck_entry is not None:
+                self.entry_idx -= 1
+                self.next_word_replace()
+
 
         elif e.key() in [Qt.Key_Right, Qt.Key_Left, Qt.Key_Up, Qt.Key_Down]:
             if e.type() == QKeyEvent.KeyPress:

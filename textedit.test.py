@@ -16,7 +16,7 @@ dest = 'test_out.json'
 
 def setUpModule():
     app = QApplication([])
-    words = ["A", "a", "the", "and", "ax", "it's"]
+    words = ["A", "a", "the", "and", "ax", "it's", "den", "din", "ken"]
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
@@ -189,6 +189,79 @@ class TestWordcheckModeHighlighting(unittest.TestCase):
         selection = self.editor.extraSelections()[0]
         col5 = selection.format.background().color().getRgb()
         self.assertEqual(col4, col5)
+
+
+class TestWordcheckModeCycling(unittest.TestCase):
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(dest)
+
+    def test_missing_word(self):
+        text = 'jkljkl A den '
+        QTest.keyClicks(self.editor, text)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+
+        QTest.keyClick(self.editor, Qt.Key_U)
+        new_text = self.editor.toPlainText()
+        self.assertEqual(text, new_text)
+
+    def test_cycling(self):
+        text = 'A den '
+        alt_text = 'a den '
+        QTest.keyClicks(self.editor, text)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        default_col = cur.charFormat().background().color().getRgb()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+        selection = self.editor.extraSelections()[0]
+        col0 = selection.format.background().color().getRgb()
+
+        QTest.keyClick(self.editor, Qt.Key_R)
+        new_text = self.editor.toPlainText()
+        selection = self.editor.extraSelections()[0]
+        col1 = selection.format.background().color().getRgb()
+        self.assertEqual(alt_text, new_text, msg="A to a")
+        self.assertNotEqual(col1, default_col, msg="non-default color")
+        self.assertNotEqual(col1, col0, msg="changed color")
+
+        QTest.keyClick(self.editor, Qt.Key_R)
+        new_text = self.editor.toPlainText()
+        selection = self.editor.extraSelections()[0]
+        col2 = selection.format.background().color().getRgb()
+        self.assertEqual(text, new_text, msg="a to A")
+        self.assertEqual(col2, col0, msg="back to same color")
+
+    def test_index_preservation(self):
+        text = 'A den '
+        alt_text = 'a den '
+        QTest.keyClicks(self.editor, text)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+
+        QTest.keyClick(self.editor, Qt.Key_R)
+        new_text = self.editor.toPlainText()
+        self.assertEqual(alt_text, new_text, msg="A to a")
+
+        # Move to other word and back.
+        cur = self.editor.textCursor()
+        cur.setPosition(4)
+        self.editor.setTextCursor(cur)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+
+        QTest.keyClick(self.editor, Qt.Key_R)
+        new_text = self.editor.toPlainText()
+        self.assertEqual(text, new_text, msg="a to A")
 
 
 if __name__ == '__main__':
