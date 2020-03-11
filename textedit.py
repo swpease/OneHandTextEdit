@@ -58,12 +58,12 @@ class MyPlainTextEdit(QPlainTextEdit):
         back_text = cursor.block().text()[cursor.positionInBlock():]
 
         # strip leading quotes
-        raw_front_match = re.search(r'(?P<junk>\'*)(?P<raw_front>[A-Za-z,.;:<>\'-]*?)$', front_text)
+        raw_front_match = re.search(r'(?P<junk>\'*)(?P<raw_front>[A-Za-z\'-]*?)$', front_text)
         raw_front_word = raw_front_match.group('raw_front')
         # strip trailing quotes
-        raw_back_match = re.search(r'^(?P<raw_back>[A-Za-z,.;:<>\'-]*)', back_text)
+        raw_back_match = re.search(r'^(?P<raw_back>[A-Za-z\'-]*)', back_text)
         raw_back_word = raw_back_match.group('raw_back')
-        pre_back_match = re.search(r'^(?P<pre_back>[A-Za-z,.;:<>\'-]*?)(?P<junk>\'*)$', raw_back_word)
+        pre_back_match = re.search(r'^(?P<pre_back>[A-Za-z\'-]*?)(?P<junk>\'*)$', raw_back_word)
         pre_back_word = pre_back_match.group('pre_back')
 
         if len(pre_back_word) == 0:
