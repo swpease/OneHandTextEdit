@@ -85,6 +85,14 @@ class MyPlainTextEdit(QPlainTextEdit):
 
         return (front_word, back_word)
 
+    def set_next_wordcheck_entry(self, word: str):
+        """Preserves explicit capitalization if non-capitalized default word"""
+        self.wordcheck_entry = map_word_to_entry(word, self.regex_map)
+        if self.wordcheck_entry is not None:
+            if word[0].isupper() and word != self.wordcheck_entry['default']:
+                capitalized_words = [wd.capitalize() for wd in self.wordcheck_entry['words']]
+                self.wordcheck_entry['words'] = capitalized_words
+
     def handle_cursor_position_changed(self):
         if self.mode == Mode.WORDCHECK:
             # Same word spot.
@@ -94,7 +102,7 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.wordcheck_cursor = self.textCursor()
             front_word, back_word = self.get_word_under_cursor(self.wordcheck_cursor)
             word = front_word + back_word
-            self.wordcheck_entry = map_word_to_entry(word, self.regex_map)
+            self.set_next_wordcheck_entry(word)
 
             self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(front_word))
             self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)

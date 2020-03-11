@@ -16,7 +16,7 @@ dest = 'test_out.json'
 
 def setUpModule():
     app = QApplication([])
-    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken"]
+    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in"]
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
@@ -262,6 +262,23 @@ class TestWordcheckModeCycling(unittest.TestCase):
         QTest.keyClick(self.editor, Qt.Key_R)
         new_text = self.editor.toPlainText()
         self.assertEqual(text, new_text, msg="i to e")
+
+
+class TestWordcheckModeCapsPreserving(unittest.TestCase):
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(dest)
+
+    def test_basic(self):
+        text = 'En '
+        QTest.keyClicks(self.editor, text)
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        cur.setPosition(0)
+        self.editor.setTextCursor(cur)
+
+        QTest.keyClick(self.editor, Qt.Key_R)
+        self.assertEqual(self.editor.toPlainText(), "In ", msg="upper case preserved")
 
 
 if __name__ == '__main__':
