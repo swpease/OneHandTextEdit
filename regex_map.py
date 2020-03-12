@@ -139,7 +139,11 @@ def create_regex_map(src: List, keep_capitals: List[bool], dest='regex_map.json'
 
 
 if __name__ == '__main__':
+    # maybe see: http://www.kilgarriff.co.uk/bnc-readme.html
     #  src = https://en.wiktionary.org/wiki/Wiktionary:Frequency_lists/Contemporary_fiction (Mar 2020)
+    #  src = https://www.english-corpora.org/coca/ (pre Mar 2020 update)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     common_words_path = os.path.join(dir_path, "common_words.txt")
-    create_regex_map([common_words_path, '/usr/share/dict/words', '/usr/share/dict/propernames'], [True, False, True])
+    COCA_path = os.path.join(dir_path, "COCA.txt")
+    create_regex_map([common_words_path, COCA_path, '/usr/share/dict/words', '/usr/share/dict/propernames'],
+                     [True, True, False, True])
