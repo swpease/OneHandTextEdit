@@ -58,9 +58,9 @@ class TestRegexMapMaker(unittest.TestCase):
         self.src2 = 'test_words2.txt'
         self.src3 = 'test_words3.txt'
         self.dest = 'test_out.json'
-        words1 = ["a", "A", "the", "thi"]
+        words1 = ["a", "A", "the", "thi", "a"]
         words2 = ["B"]
-        words3 = ["a"]
+        words3 = ["a", "a"]
         with open(self.src1, 'w') as f:
             for word in words1:
                 f.write("%s\n" % word)

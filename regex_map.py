@@ -122,9 +122,13 @@ def create_regex_map(src: List[str], keep_capitals: List[bool], dest='regex_map.
         with open(src[i]) as f:
             all_words = [line.rstrip() for line in f]
             if keep_capitals[i]:
-                words.extend([wd for wd in all_words if wd not in words])
+                for wd in all_words:
+                    if wd not in words:
+                        words.append(wd)
             else:
-                words.extend([wd for wd in all_words if wd.islower() and wd not in words])
+                for wd in all_words:
+                    if wd.islower() and wd not in words:
+                        words.append(wd)
 
     regex_words = defaultdict(list)
     for word in words:
