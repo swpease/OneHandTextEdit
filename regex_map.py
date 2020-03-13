@@ -101,20 +101,21 @@ def word_to_lc_regex(word: str) -> str:
     return regex
 
 
-def create_regex_map(src: List, keep_capitals: List[bool], dest='regex_map.json'):
+def create_regex_map(src: List[str], keep_capitals: List[bool], dest='regex_map.json'):
     """
     Takes a list of lists of dictionary words and converts it like,
     e.g.: {"^[a;][vn]$": {"default": "an", "words": ["an", "av"]}, [...]}
     then dumps to a big json file.
 
     :param src: List of source files of "{word}\n". Put in order of priority (first mapped word set as Entry default).
-    :param keep_capitals: Defaults to / padded with False. Linked by index to src List.
+    :param keep_capitals: Defaults to / padded with True. Linked by index to src List.
     :param dest: Output file name.
     :return:
     """
     len_diff = len(src) - len(keep_capitals)
     if len_diff > 0:
-        keep_capitals.extend([False] * len_diff)
+        print("Padding `keep_capitals` arg with `True`")
+        keep_capitals.extend([True] * len_diff)
     words = []
 
     for i in range(len(src)):
