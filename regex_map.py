@@ -69,6 +69,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
         return
 
     # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
+    # TODO: possessives
     grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', raw_word)
     root = grouped_word_match.group('root')
     possible_word = raw_word
@@ -149,5 +150,10 @@ if __name__ == '__main__':
     dir_path = os.path.dirname(os.path.realpath(__file__))
     common_words_path = os.path.join(dir_path, "common_words.txt")
     COCA_path = os.path.join(dir_path, "COCA.txt")
-    create_regex_map([common_words_path, COCA_path, '/usr/share/dict/words', '/usr/share/dict/propernames'],
-                     [True, True, False, True])
+    contractions = os.path.join(dir_path, "contractions.txt")
+    countries_demonyms = os.path.join(dir_path, "countries_demonyms.txt")
+    months_and_days = os.path.join(dir_path, 'months_and_days.txt')
+    create_regex_map([common_words_path, COCA_path, contractions, countries_demonyms, months_and_days,
+                      '/usr/share/dict/words', '/usr/share/dict/propernames'],
+                     [True, True, True, True, True,
+                      False, True])
