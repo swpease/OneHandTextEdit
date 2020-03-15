@@ -58,10 +58,10 @@ capitalized_symbol_map = {
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
     Tries to map a string to an Entry.
-    Handles ending `;` `.` and `,` (`a` `z` and `x`)
+    Prioritizes `azx` over `;,.`
     Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
 
-    :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+?)\'*$' , though I suppose this still kind of works with r'.*'
+    :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+)$' , w/o leading or trailing `'`
     :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
     :return: A deep copy of the Entry, if it exists.
     """
@@ -80,7 +80,19 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
             return copy.deepcopy(entry)
         else:
             possible_word = possible_word[:-1]
-    # No matched, so return None.
+
+    # No word found. Check for possessives.
+    if re.search(r'\'[sl]$', root) is not None:  # You could eff this up if you manually overwrote s with l.
+        regex: str = word_to_lc_regex(root[:-2])
+        entry: Optional[Entry] = regex_map.get(regex)
+        if entry is not None:
+            entry_copy = copy.deepcopy(entry)
+            entry_copy['default'] = entry_copy['default'] + "'s"
+            possessive_words = [word + "'s" for word in entry_copy['words']]
+            entry_copy['words'] = possessive_words
+            return entry_copy
+
+    return  # No matched, so return None.
 
 
 def lowerize_symbols(raw_text: str) -> str:

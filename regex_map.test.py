@@ -51,6 +51,12 @@ class TestWordMapping(unittest.TestCase):
         entry['words'].append('hi')
         self.assertNotEqual(entry, map_word_to_entry(';,.,;', self.regex_map))
 
+    def test_possessives(self):
+        word = 'ax\'s'
+        entry = map_word_to_entry(word, self.regex_map)
+        self.assertEqual(word, entry['default'])
+        self.assertEqual([word], entry['words'])
+
 
 class TestRegexMapMaker(unittest.TestCase):
     def setUp(self) -> None:
