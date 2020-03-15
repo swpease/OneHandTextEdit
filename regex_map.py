@@ -116,22 +116,21 @@ def create_regex_map(src: List[str], keep_capitals: List[bool], dest='regex_map.
     if len_diff > 0:
         print("Padding `keep_capitals` arg with `True`")
         keep_capitals.extend([True] * len_diff)
-    words = []
 
+    words = {}
     for i in range(len(src)):
         with open(src[i]) as f:
             all_words = [line.rstrip() for line in f]
             if keep_capitals[i]:
                 for wd in all_words:
-                    if wd not in words:
-                        words.append(wd)
+                    words[wd] = 1  # Values are irrelevant.
             else:
                 for wd in all_words:
-                    if wd.islower() and wd not in words:
-                        words.append(wd)
+                    if wd.islower():
+                        words[wd] = 1
 
     regex_words = defaultdict(list)
-    for word in words:
+    for word in list(words):  # Python 3.7+ preserves dict insertion order.
         regex = word_to_lc_regex(word)
         regex_words[regex].append(word)
 

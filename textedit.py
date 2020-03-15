@@ -41,6 +41,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         """Pickup where you left off so the list cycling is sane."""
         if self.wordcheck_entry is not None:
             try:
+                # TODO: adjust for caps?
                 self.entry_idx = self.wordcheck_entry['words'].index(self.wordcheck_cursor.selection().toPlainText())
             except ValueError as e:
                 self.entry_idx = 0
@@ -96,6 +97,7 @@ class MyPlainTextEdit(QPlainTextEdit):
     def handle_cursor_position_changed(self):
         if self.mode == Mode.WORDCHECK:
             # Same word spot.
+            # TODO: modify to handle deletion? e.g. hex -> he -> hi
             if self.wordcheck_cursor.anchor() <= self.textCursor().position() <= self.wordcheck_cursor.position():
                 return
 
