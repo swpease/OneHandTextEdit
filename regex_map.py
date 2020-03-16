@@ -68,11 +68,11 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     if len(raw_word) == 0:
         return
 
+    lc_word = lowercaseify(raw_word)
     # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
-    # TODO: possessives
-    grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', raw_word)
+    grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', lc_word)
     root = grouped_word_match.group('root')
-    possible_word = raw_word
+    possible_word = lc_word
     while len(possible_word) >= len(root):
         regex: str = word_to_lc_regex(possible_word)
         entry: Optional[Entry] = regex_map.get(regex)
@@ -95,8 +95,8 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     return  # No matched, so return None.
 
 
-def lowerize_symbols(raw_text: str) -> str:
-    """Lower-caseify words, accounting for A=< Z=> and X=: """
+def lowercaseify(raw_text: str) -> str:
+    """Lower-caseify words, accounting for A=< Z=> and X=: e.g. "wE:" -> "we;" """
     text = raw_text.lower()
     for upper, lower in capitalized_symbol_map.items():
         text = text.replace(upper, lower)
@@ -105,7 +105,7 @@ def lowerize_symbols(raw_text: str) -> str:
 
 def word_to_lc_regex(word: str) -> str:
     """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
-    lc_word = lowerize_symbols(word)  # I want the words to be regexed case-insensitively, but remain cased for lookup.
+    lc_word = lowercaseify(word)  # I want the words to be regexed case-insensitively, but remain cased for lookup.
     regex = '^'
     for i in lc_word:
         regex += letter_regex_map.get(i, '[' + i + ']')  # Do I need to worry about "\" escaping for Qt?
