@@ -55,6 +55,23 @@ capitalized_symbol_map = {
 }
 
 
+def handle_entry_caps(entry: Entry) -> Entry:
+    capitalized_words = [wd.capitalize() for wd in entry['words']]
+
+    if entry['default'][0].isupper():  # Don't know if caps were intended -> keep cap and non-cap.
+        deduped_words = [wd for wd in capitalized_words if wd not in entry['words']]
+        entry['words'].extend(deduped_words)
+    else:  # User explicitly capitalized word -> only want capitalized words.
+        deduped_words = []
+        for wd in capitalized_words:
+            if wd not in deduped_words:
+                deduped_words.append(wd)
+        entry['words'] = deduped_words
+        entry['default'] = entry['default'].capitalize()
+
+    return entry
+
+
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
     Tries to map a string to an Entry.
@@ -68,6 +85,8 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     if len(raw_word) == 0:
         return
 
+    is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map
+
     lc_word = lowercaseify(raw_word)
     # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
     grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', lc_word)
@@ -77,7 +96,11 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
         regex: str = word_to_lc_regex(possible_word)
         entry: Optional[Entry] = regex_map.get(regex)
         if entry is not None:
-            return copy.deepcopy(entry)
+            entry_copy = copy.deepcopy(entry)
+            if is_capitalized:
+                return handle_entry_caps(entry_copy)
+            else:
+                return entry_copy
         else:
             possible_word = possible_word[:-1]
 
@@ -90,7 +113,10 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
             entry_copy['default'] = entry_copy['default'] + "'s"
             possessive_words = [word + "'s" for word in entry_copy['words']]
             entry_copy['words'] = possessive_words
-            return entry_copy
+            if is_capitalized:
+                return handle_entry_caps(entry_copy)
+            else:
+                return entry_copy
 
     return  # No matched, so return None.
 

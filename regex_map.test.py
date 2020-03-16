@@ -25,11 +25,11 @@ class TestWordMapping(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.src = 'test_words.txt'
         cls.dest = 'test_out.json'
-        words = ["A", "a", "the", "and", "ax", "it's"]
+        words = ["A", "a", "the", "and", "ax", "it's", "may", "cat", "May", "Hi", "hi", "he"]
         with open(cls.src, 'w') as f:
             for word in words:
                 f.write("%s\n" % word)
-        create_regex_map([cls.src], [False], cls.dest)
+        create_regex_map([cls.src], [True], cls.dest)
         with open(cls.dest) as f:
             cls.regex_map = json.load(f)
 
@@ -57,6 +57,19 @@ class TestWordMapping(unittest.TestCase):
         entry = map_word_to_entry(word, self.regex_map)
         self.assertEqual(word, entry['default'])
         self.assertEqual([word], entry['words'])
+
+    def test_caps_stuff(self):
+        entry = map_word_to_entry('may', self.regex_map)
+        self.assertEqual(entry['default'], 'may')
+        self.assertEqual(entry['words'], ['may', 'cat', 'May'])
+
+        entry = map_word_to_entry('May', self.regex_map)
+        self.assertEqual(entry['default'], 'May')
+        self.assertEqual(entry['words'], ['May', 'Cat'])
+
+        entry = map_word_to_entry('Hi', self.regex_map)
+        self.assertEqual(entry['default'], 'Hi')
+        self.assertEqual(entry['words'], ['Hi', 'hi', 'he', 'He'])
 
 
 class TestRegexMapMaker(unittest.TestCase):
