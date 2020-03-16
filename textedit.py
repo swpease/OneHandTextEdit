@@ -88,11 +88,6 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def handle_cursor_position_changed(self):
         if self.mode == Mode.WORDCHECK:
-            # Same word spot.
-            # TODO: modify to handle deletion? e.g. hex -> he -> hi
-            if self.wordcheck_cursor.anchor() <= self.textCursor().position() <= self.wordcheck_cursor.position():
-                return
-
             self.wordcheck_cursor = self.textCursor()
             front_word, back_word = self.get_word_under_cursor(self.wordcheck_cursor)
             word = front_word + back_word
@@ -143,43 +138,74 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def handle_wordcheck_key_events(self, e: QKeyEvent):
         """
-        Remaps key events to their Wordcheck mode equivalents. Eats all events except arrow keys.
+        Remaps key events to their Wordcheck mode equivalents. Only handles NoModifier and ShiftModifier events.
 
-        :param e: The key event to remap. Assumes e.modifiers() == Qt.NoModifier.
+        :param e: The key event to remap.
         :return:
         """
-        if e.key() in [Qt.Key_S, Qt.Key_H]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.AltModifier,
-                                 autorep=e.isAutoRepeat(), count=e.count())
-            QApplication.sendEvent(self, mapped_e)
-        elif e.key() in [Qt.Key_G, Qt.Key_L]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.AltModifier,
-                                 autorep=e.isAutoRepeat(), count=e.count())
-            QApplication.sendEvent(self, mapped_e)
-        elif e.key() in [Qt.Key_F, Qt.Key_J]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Down, Qt.NoModifier,
-                                 autorep=e.isAutoRepeat(), count=e.count())
-            QApplication.sendEvent(self, mapped_e)
-        elif e.key() in [Qt.Key_D, Qt.Key_K]:
-            mapped_e = QKeyEvent(e.type(), Qt.Key_Up, Qt.NoModifier,
-                                 autorep=e.isAutoRepeat(), count=e.count())
-            QApplication.sendEvent(self, mapped_e)
-
-        elif e.key() in [Qt.Key_R, Qt.Key_U] and e.type() == QKeyEvent.KeyPress:
-            if self.wordcheck_entry is not None:
-                self.entry_idx += 1
-                self.next_word_replace()
-        elif e.key() in [Qt.Key_E, Qt.Key_I] and e.type() == QKeyEvent.KeyPress:
-            if self.wordcheck_entry is not None:
-                self.entry_idx -= 1
-                self.next_word_replace()
-
-
-        elif e.key() in [Qt.Key_Right, Qt.Key_Left, Qt.Key_Up, Qt.Key_Down]:
+        if e.key() in [Qt.Key_Delete, Qt.Key_Backspace,
+                       Qt.Key_Comma, Qt.Key_Period, Qt.Key_Semicolon,
+                       Qt.Key_Colon, Qt.Key_Less, Qt.Key_Greater]:
             if e.type() == QKeyEvent.KeyPress:
                 super().keyPressEvent(e)
             elif e.type() == QKeyEvent.KeyRelease:
                 super().keyReleaseEvent(e)
+
+        elif e.modifiers() == Qt.NoModifier:
+            if e.key() in [Qt.Key_S, Qt.Key_H]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.AltModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+            elif e.key() in [Qt.Key_G, Qt.Key_L]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.AltModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+            elif e.key() in [Qt.Key_F, Qt.Key_J]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Down, Qt.KeypadModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+            elif e.key() in [Qt.Key_D, Qt.Key_K]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Up, Qt.KeypadModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+
+            elif e.key() in [Qt.Key_R, Qt.Key_U] and e.type() == QKeyEvent.KeyPress:
+                if self.wordcheck_entry is not None:
+                    self.entry_idx += 1
+                    self.next_word_replace()
+            elif e.key() in [Qt.Key_E, Qt.Key_I] and e.type() == QKeyEvent.KeyPress:
+                if self.wordcheck_entry is not None:
+                    self.entry_idx -= 1
+                    self.next_word_replace()
+
+            elif e.key() in [Qt.Key_A, Qt.Key_Z, Qt.Key_X]:
+                if e.key() == Qt.Key_A:
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Semicolon, Qt.NoModifier, text=';',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
+                elif e.key() == Qt.Key_Z:
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Period, Qt.NoModifier, text='.',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
+                else:  # Key_X
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Comma, Qt.NoModifier, text=',',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
+
+        elif e.modifiers() == Qt.ShiftModifier:
+            if e.key() in [Qt.Key_A, Qt.Key_Z, Qt.Key_X]:
+                if e.key() == Qt.Key_A:
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Colon, Qt.ShiftModifier, text=':',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
+                elif e.key() == Qt.Key_Z:
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Greater, Qt.ShiftModifier, text='>',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
+                else:  # Key_X
+                    mapped_e = QKeyEvent(e.type(), Qt.Key_Less, Qt.ShiftModifier, text='<',
+                                         autorep=e.isAutoRepeat(), count=e.count())
+                    QApplication.sendEvent(self, mapped_e)
 
     def keyPressEvent(self, e: QKeyEvent):
         if e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
@@ -193,9 +219,9 @@ class MyPlainTextEdit(QPlainTextEdit):
             super().keyPressEvent(e)
 
         elif self.mode == Mode.WORDCHECK:
-            if e.modifiers() == Qt.NoModifier:  # Could be an issue if slash is remapped to be hidden under a modifier.
+            if e.modifiers() in [Qt.NoModifier, Qt.ShiftModifier]:
                 self.handle_wordcheck_key_events(e)
-            elif e.modifiers() != Qt.ShiftModifier:  # Eat shift-modified keys.
+            else:
                 super().keyPressEvent(e)
 
         else:
@@ -203,9 +229,9 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def keyReleaseEvent(self, e: QKeyEvent):
         if self.mode == Mode.WORDCHECK:
-            if e.modifiers() == Qt.NoModifier:
+            if e.modifiers() in [Qt.NoModifier, Qt.ShiftModifier]:
                 self.handle_wordcheck_key_events(e)
-            elif e.modifiers() != Qt.ShiftModifier:  # Eat shift-modified keys.
+            else:
                 super().keyReleaseEvent(e)
         else:
             super().keyReleaseEvent(e)

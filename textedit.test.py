@@ -16,7 +16,7 @@ dest = 'test_out.json'
 
 def setUpModule():
     app = QApplication([])
-    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in"]
+    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in", "hex", "he", "hi"]
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
@@ -75,7 +75,6 @@ class TestInsertMode(unittest.TestCase):
         QTest.keyClicks(self.editor, 'iy\'l ')
         self.assertEqual(self.editor.textCursor().block().text(), "it\'s ")
 
-
     def test_handles_starting_symbols(self):
         QTest.keyClicks(self.editor, '?!3""\'"thi ')
         self.assertEqual(self.editor.textCursor().block().text(), '?!3""\'"the ')
@@ -95,6 +94,34 @@ class TestModeSwitching(unittest.TestCase):
         self.assertEqual(self.editor.mode, Mode.WORDCHECK)
         QTest.keyClick(self.editor, Qt.Key_I, modifier=Qt.ControlModifier)
         self.assertEqual(self.editor.mode, Mode.INSERT)
+
+
+class TestWordcheckModeAllowedKeys(unittest.TestCase):
+    def setUp(self) -> None:
+        self.editor = MyPlainTextEdit(dest)
+
+    def test_typing(self):
+        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+        QTest.keyClicks(self.editor, 'xza,.;')
+        self.assertEqual(self.editor.textCursor().block().text(), ',.;,.;')
+        self.editor.clear()
+        QTest.keyClicks(self.editor, 'XZA<>:', modifier=Qt.ShiftModifier)
+        self.assertEqual(self.editor.textCursor().block().text(), '<>:<>:')
+        QTest.keyClick(self.editor, Qt.Key_Backspace, modifier=Qt.NoModifier)
+        self.assertEqual(self.editor.textCursor().block().text(), '<>:<>')
+
+    def test_hot_word_replacement(self):
+        # this test handles getting to "hi," from its default coersion to "hex"
+        QTest.keyClicks(self.editor, 'hi, ')  # coerced to "hex"
+        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+
+        cur = self.editor.textCursor()
+        cur.setPosition(3)
+        self.editor.setTextCursor(cur)
+        QTest.keyClick(self.editor, Qt.Key_Backspace, modifier=Qt.NoModifier)  # "he| " (| = cursor)
+
+        QTest.keyClick(self.editor, Qt.Key_U)
+        self.assertEqual(self.editor.textCursor().block().text(), 'hi ')
 
 
 class TestWordcheckModeMovement(unittest.TestCase):
