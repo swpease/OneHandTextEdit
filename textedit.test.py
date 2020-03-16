@@ -1,9 +1,8 @@
 import unittest
 import os
 
-from PySide2.QtCore import Qt, QEvent
-from PySide2.QtGui import QTextCursor, QKeyEvent
-from PySide2.QtWidgets import QApplication, QPlainTextEdit
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication
 from PySide2.QtTest import QTest
 
 from textedit import MyPlainTextEdit, Mode
