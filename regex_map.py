@@ -45,11 +45,37 @@ letter_regex_map = {
     'n': '[vn]',
     'b': '[b]',
 
-    '-': '-',
+    'Q': '[qp]',
+    'P': '[qp]',
+    'W': '[wo]',
+    'O': '[wo]',
+    'E': '[ei]',
+    'I': '[ei]',
+    'R': '[ru]',
+    'U': '[ru]',
+    'T': '[ty]',
+    'Y': '[ty]',
 
-    '<': '[x,]',
+    'A': '[a;]',
+    ':': '[a;]',
+    'S': '[ls]',
+    'L': '[ls]',
+    'D': '[dk]',
+    'K': '[dk]',
+    'F': '[fj]',
+    'J': '[fj]',
+    'G': '[gh]',
+    'H': '[gh]',
+
+    'Z': '[z.]',
     '>': '[z.]',
-    ':': '[a;]'
+    'X': '[x,]',
+    '<': '[x,]',
+    'C': '[cm]',
+    'M': '[cm]',
+    'V': '[vn]',
+    'N': '[vn]',
+    'B': '[b]',
 }
 
 capitalized_symbol_map = {
@@ -142,7 +168,6 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     # For left-handers. Gets coerced back as needed later.
     for letter, symbol in letter_to_symbol_map.items():
         symbolized_word = symbolized_word.replace(letter, symbol)
-    symbolized_word = symbolized_word.lower()  # TODO add in capitals to mapping dict
 
     # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
     grouped_word_match = re.match(r'(?P<root>.+?)[.,;<>:]*$', symbolized_word)
@@ -179,19 +204,10 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     return  # No matched, so return None.
 
 
-def lowercaseify(raw_text: str) -> str:
-    """Lower-caseify words, accounting for A=< Z=> and X=: e.g. "wE:" -> "we;" """
-    text = raw_text.lower()
-    for upper, lower in capitalized_symbol_map.items():
-        text = text.replace(upper, lower)
-    return text
-
-
 def word_to_lc_regex(word: str) -> str:
     """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
-    lc_word = lowercaseify(word)  # I want the words to be regexed case-insensitively, but remain cased for lookup.
     regex = '^'
-    for i in lc_word:
+    for i in word:
         regex += letter_regex_map.get(i, '[' + i + ']')  # Do I need to worry about "\" escaping for Qt?
     regex += '$'
 
