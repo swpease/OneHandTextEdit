@@ -70,10 +70,13 @@ class TestInsertMode(unittest.TestCase):
         self.editor.document().clear()
         QTest.keyClicks(self.editor, ';,, ')
         self.assertEqual(self.editor.textCursor().block().text(), "ax, ")
+        self.editor.document().clear()
+        QTest.keyClicks(self.editor, 'axAx ')
+        self.assertEqual(self.editor.textCursor().block().text(), "ax:, ", msg="for lefties")
 
     def test_handles_contractions(self):
-        QTest.keyClicks(self.editor, 'iy\'l ')
-        self.assertEqual(self.editor.textCursor().block().text(), "it\'s ")
+        QTest.keyClicks(self.editor, 'iy\'lAzx ')
+        self.assertEqual(self.editor.textCursor().block().text(), "it\'s:., ")
 
     def test_handles_starting_symbols(self):
         QTest.keyClicks(self.editor, '?!3""\'"thi ')

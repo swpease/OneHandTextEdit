@@ -45,13 +45,26 @@ letter_regex_map = {
     'n': '[vn]',
     'b': '[b]',
 
-    '-': '-'
+    '-': '-',
+
+    '<': '[x,]',
+    '>': '[z.]',
+    ':': '[a;]'
 }
 
 capitalized_symbol_map = {
     '<': ',',
     '>': '.',
     ':': ';'
+}
+
+letter_to_symbol_map = {
+    'x': ',',
+    'z': '.',
+    'a': ';',
+    'X': '<',
+    'Z': '>',
+    'A': ':'
 }
 
 
@@ -117,6 +130,61 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
                 return handle_entry_caps(entry_copy)
             else:
                 return entry_copy
+
+    return  # No matched, so return None.
+
+
+def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[str]:
+    """
+    Tries to map a string to an Entry, and takes its 'default' plus necessary punctuation.
+    Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
+
+    :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+)$' , w/o leading or trailing `'`
+    :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
+    :return: The default value of the matched Entry, if it exists, plus trailing r'[,.;]*' punctuation.
+    """
+    if len(raw_word) == 0:
+        return
+
+    is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map
+
+    symbolized_word = raw_word
+    # For left-handers. Gets coerced back as needed later.
+    for letter, symbol in letter_to_symbol_map.items():
+        symbolized_word = symbolized_word.replace(letter, symbol)
+    symbolized_word = symbolized_word.lower()  # TODO add in capitals to mapping dict
+
+    # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
+    grouped_word_match = re.match(r'(?P<root>.+?)[.,;<>:]*$', symbolized_word)
+    root = grouped_word_match.group('root')
+    possible_word = symbolized_word
+    tail = ''
+    while len(possible_word) >= len(root):
+        regex: str = word_to_lc_regex(possible_word)
+        entry: Optional[Entry] = regex_map.get(regex)
+        if entry is not None:
+            default = entry['default']
+            word = default + tail
+            if is_capitalized:
+                return word.capitalize()
+            else:
+                return word
+        else:
+            tail = possible_word[-1] + tail
+            possible_word = possible_word[:-1]
+
+    # No word found. Check for possessives.
+    tail = tail[1:]  # Overshot in above while loop.
+    if re.search(r'\'[sl]$', root) is not None:
+        regex: str = word_to_lc_regex(root[:-2])
+        entry: Optional[Entry] = regex_map.get(regex)
+        if entry is not None:
+            default = entry['default']
+            word = default + "'s" + tail
+            if is_capitalized:
+                return word.capitalize()
+            else:
+                return word
 
     return  # No matched, so return None.
 

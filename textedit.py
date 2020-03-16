@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
 from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from regex_map import map_word_to_entry, capitalized_symbol_map, Entry
+from regex_map import map_word_to_entry, map_string_to_word, Entry
 
 
 class Mode(Enum):
@@ -125,11 +125,9 @@ class MyPlainTextEdit(QPlainTextEdit):
 
         match_len = len(end_seq_match[0]) - len(end_seq_match.group('lead_symbols'))  # how far back to send cursor
         raw_word = end_seq_match.group('raw_word')
-        entry = map_word_to_entry(raw_word, self.regex_map)
-        if entry is None:  # Word not found in regex_map dictionary
+        word = map_string_to_word(raw_word, self.regex_map)
+        if word is None:  # Word not found in regex_map dictionary
             return
-
-        word: str = entry['default']
 
         # Replace the old word
         cursor.setPosition(cursor.position() - match_len)
