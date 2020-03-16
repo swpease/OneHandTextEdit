@@ -184,6 +184,8 @@ class MyPlainTextEdit(QPlainTextEdit):
     def keyPressEvent(self, e: QKeyEvent):
         if e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
             self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
+            if self.mode == Mode.INSERT:
+                self.setExtraSelections([])
 
         elif self.mode == Mode.INSERT:
             if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
