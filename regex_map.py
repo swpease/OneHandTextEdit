@@ -87,39 +87,29 @@ def handle_entry_caps(entry: Entry) -> Entry:
 
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
-    Tries to map a string to an Entry.
-    Prioritizes `azx` over `;,.`
-    Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
+    Tries to map a word to an Entry.
 
-    :param raw_word: pattern ~ r'([A-Za-z,.;:<>\'-]+)$' , w/o leading or trailing `'`
+    :param raw_word: pattern ~ r'([A-Za-z\'-]+)$' , w/o leading or trailing `'`
     :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
     :return: A deep copy of the Entry, if it exists.
     """
     if len(raw_word) == 0:
         return
 
-    is_capitalized = raw_word[0].isupper() or raw_word[0] in capitalized_symbol_map
+    is_capitalized = raw_word[0].isupper()
 
-    lc_word = lowercaseify(raw_word)
-    # Accounting for a=; z=. and x=, possibly at end of word (differentiating, e.g. 'pix' vs 'pi,')
-    grouped_word_match = re.match(r'(?P<root>.+?)[.,;]*$', lc_word)
-    root = grouped_word_match.group('root')
-    possible_word = lc_word
-    while len(possible_word) >= len(root):
-        regex: str = word_to_lc_regex(possible_word)
-        entry: Optional[Entry] = regex_map.get(regex)
-        if entry is not None:
-            entry_copy = copy.deepcopy(entry)
-            if is_capitalized:
-                return handle_entry_caps(entry_copy)
-            else:
-                return entry_copy
+    regex: str = word_to_lc_regex(raw_word)
+    entry: Optional[Entry] = regex_map.get(regex)
+    if entry is not None:
+        entry_copy = copy.deepcopy(entry)
+        if is_capitalized:
+            return handle_entry_caps(entry_copy)
         else:
-            possible_word = possible_word[:-1]
+            return entry_copy
 
     # No word found. Check for possessives.
-    if re.search(r'\'[sl]$', root) is not None:  # You could eff this up if you manually overwrote s with l.
-        regex: str = word_to_lc_regex(root[:-2])
+    if raw_word.endswith('\'s'):  # You could eff this up if you manually overwrote s with l.
+        regex: str = word_to_lc_regex(raw_word[:-2])
         entry: Optional[Entry] = regex_map.get(regex)
         if entry is not None:
             entry_copy = copy.deepcopy(entry)
