@@ -265,7 +265,8 @@ if __name__ == '__main__':
     contractions = os.path.join(dir_path, "contractions.txt")
     countries_demonyms = os.path.join(dir_path, "countries_demonyms.txt")
     months_and_days = os.path.join(dir_path, 'months_and_days.txt')
-    create_regex_map([common_words_path, COCA_path, contractions, countries_demonyms, months_and_days,
+    plurals = os.path.join(dir_path, 'BNC_curated_plurals.txt')
+    create_regex_map([common_words_path, COCA_path, contractions, countries_demonyms, months_and_days, plurals,
                       '/usr/share/dict/words', '/usr/share/dict/propernames'],
-                     [True, True, True, True, True,
+                     [True, True, True, True, True, False,
                       False, True])
