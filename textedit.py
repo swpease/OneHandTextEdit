@@ -24,6 +24,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         self.wordcheck_cursor: QTextCursor = self.textCursor()
         self.wordcheck_entry: Optional[Entry] = None
         self.entry_idx = 0
+        self.autocaps = True
 
         self.cursorPositionChanged.connect(self.handle_cursor_position_changed)
 
@@ -128,6 +129,14 @@ class MyPlainTextEdit(QPlainTextEdit):
         word = map_string_to_word(raw_word, self.regex_map)
         if word is None:  # Word not found in regex_map dictionary
             return
+
+        # autocaps
+        if self.autocaps:
+            autocaps_match = re.search(r'(?P<prev_word>\S*?)(?P<junk>[\'\"]*)(?P<whitespace>\s*?)(?P<cur_word>\S+)$', text)
+            if autocaps_match is not None:
+                prev_word = autocaps_match.group('prev_word')
+                if len(prev_word) == 0 or prev_word.endswith(('.', '?', '!')):
+                    word = word.capitalize()
 
         # Replace the old word
         cursor.setPosition(cursor.position() - match_len)

@@ -30,6 +30,7 @@ def tearDownModule():
 class TestInsertMode(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_basic(self):
         # e: QKeyEvent = QKeyEvent(QEvent.KeyPress, Qt.Key_Space, Qt.NoModifier)
@@ -85,10 +86,19 @@ class TestInsertMode(unittest.TestCase):
         QTest.keyClicks(self.editor, 'thi?!"\' ')
         self.assertEqual(self.editor.textCursor().block().text(), 'the?!"\' ')
 
+    def test_autocaps(self):
+        self.editor.autocaps = True
+        QTest.keyClicks(self.editor, 'thi!\' ')
+        self.assertEqual(self.editor.textCursor().block().text(), 'The!\' ')
+        QTest.keyClicks(self.editor, 'thi. the ')
+        self.assertEqual(self.editor.textCursor().block().text(), 'The!\' The. The ')
+
+
 
 class TestModeSwitching(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_basic(self):
         self.assertEqual(self.editor.mode, Mode.INSERT)
@@ -101,6 +111,7 @@ class TestModeSwitching(unittest.TestCase):
 class TestWordcheckModeAllowedKeys(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_typing(self):
         QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
@@ -129,6 +140,7 @@ class TestWordcheckModeAllowedKeys(unittest.TestCase):
 class TestWordcheckModeMovement(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_move_up(self):
         QTest.keyClick(self.editor, Qt.Key_Return)
@@ -174,6 +186,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
 class TestWordcheckModeHighlighting(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_highlighting_colors_different(self):
         QTest.keyClicks(self.editor, 'i x i')  # Don't coerce ending `i`
@@ -223,6 +236,7 @@ class TestWordcheckModeHighlighting(unittest.TestCase):
 class TestWordcheckModeCycling(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_missing_word(self):
         text = 'jkljkl e den '
@@ -296,6 +310,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
 class TestWordcheckModeCapsPreserving(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(dest)
+        self.editor.autocaps = False
 
     def test_basic(self):
         text = 'En '
