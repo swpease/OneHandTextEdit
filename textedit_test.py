@@ -15,7 +15,7 @@ dest = 'test_out.json'
 
 def setUpModule():
     app = QApplication([])
-    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in", "hex", "he", "hi"]
+    words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in", "hex", "he", "hi", "z"]
     with open(src, 'w') as f:
         for word in words:
             f.write("%s\n" % word)
@@ -93,6 +93,9 @@ class TestInsertMode(unittest.TestCase):
         QTest.keyClicks(self.editor, 'thi. the ')
         self.assertEqual(self.editor.textCursor().block().text(), 'The!\' The. The ')
 
+    def test_end_parens(self):
+        QTest.keyClicks(self.editor, '"(\'thi?!\')".z  ')
+        self.assertEqual(self.editor.textCursor().block().text(), '"(\'the?!\')"..  ')
 
 
 class TestModeSwitching(unittest.TestCase):

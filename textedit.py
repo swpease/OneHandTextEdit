@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
 from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from regex_map import map_word_to_entry, map_string_to_word, Entry
+from regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, Entry
 
 
 class Mode(Enum):
@@ -120,10 +120,26 @@ class MyPlainTextEdit(QPlainTextEdit):
         """Overwrites the word before the cursor with the default mapping, if said mapping exists. """
         cursor = self.textCursor()
         text = cursor.block().text()[:cursor.positionInBlock()]  # Look b/w start of para and current pos.
-        end_seq_match = re.search(r'(?P<lead_symbols>[^\sA-Za-z,.;:<>-]*)(?P<raw_word>[A-Za-z,.;:<>\'-]+?)(?P<end>[^A-Za-z,.;:<>-]*)$', text)
+        # Last line of Pattern matches closing parens of moderate complexity. Need to coerce post-parens punctuation.
+        word_pattern = re.compile(r'''(?P<lead_symbols>[^\sA-Za-z,.;:<>]*)
+                                      (?P<raw_word>[A-Za-z,.;:<>\'-]+?)
+                                      (?P<end>[^A-Za-z,.;:<>]*|
+                                      [!?\'"]*[]})]+[\'"]*(?P<end_punct_and_space>[.,;:azxA]+\s*))$''', re.X)
+        end_seq_match = word_pattern.search(text)
         if end_seq_match is None:  # No word to handle
             return
 
+        # Handling closing parens
+        end_punct_and_space = end_seq_match.group('end_punct_and_space')
+        if end_punct_and_space is not None:
+            paren_cursor = self.textCursor()
+            converted_string = ''
+            for c in end_punct_and_space:
+                converted_string += letter_to_symbol_map.get(c, c)
+            paren_cursor.setPosition(paren_cursor.position() - len(converted_string), mode=QTextCursor.KeepAnchor)
+            paren_cursor.insertText(converted_string)
+
+        # Handling word
         match_len = len(end_seq_match[0]) - len(end_seq_match.group('lead_symbols'))  # how far back to send cursor
         raw_word = end_seq_match.group('raw_word')
         word = map_string_to_word(raw_word, self.regex_map)
