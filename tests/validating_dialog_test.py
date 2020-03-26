@@ -5,7 +5,7 @@ from PySide2.QtGui import QRegExpValidator
 from PySide2.QtWidgets import QApplication, QMessageBox, QLabel
 from PySide2.QtTest import QTest
 
-from validating_dialog import ValidatingDialog
+from OHTE.validating_dialog import ValidatingDialog
 
 
 def setUpModule():

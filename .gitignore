@@ -130,5 +130,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-regex_map.json
+OHTE/regex_map.json
 COCA.txt
