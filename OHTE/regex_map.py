@@ -94,7 +94,7 @@ letter_to_symbol_map = {
 }
 
 
-def handle_entry_caps(entry: Entry) -> Entry:
+def _handle_entry_caps(entry: Entry) -> Entry:
     capitalized_words = [wd.capitalize() for wd in entry['words']]
 
     if entry['default'][0].isupper():  # Don't know if caps were intended -> keep cap and non-cap.
@@ -129,7 +129,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     if entry is not None:
         entry_copy = copy.deepcopy(entry)
         if is_capitalized:
-            return handle_entry_caps(entry_copy)
+            return _handle_entry_caps(entry_copy)
         else:
             return entry_copy
 
@@ -143,7 +143,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
             possessive_words = [word + "'s" for word in entry_copy['words']]
             entry_copy['words'] = possessive_words
             if is_capitalized:
-                return handle_entry_caps(entry_copy)
+                return _handle_entry_caps(entry_copy)
             else:
                 return entry_copy
 
