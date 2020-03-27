@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 
-from regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word
+from OHTE.regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word
 
 
 class TestRegexMaker(unittest.TestCase):

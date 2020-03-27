@@ -5,8 +5,8 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication
 from PySide2.QtTest import QTest
 
-from textedit import MyPlainTextEdit, Mode
-from regex_map import create_regex_map
+from OHTE.textedit import MyPlainTextEdit, Mode
+from OHTE.regex_map import create_regex_map
 
 
 src = 'test_words.txt'
@@ -14,7 +14,8 @@ dest = 'test_out.json'
 
 
 def setUpModule():
-    app = QApplication([])
+    if QApplication.instance() is None:
+        app = QApplication([])
     words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in", "hex", "he", "hi", "z"]
     with open(src, 'w') as f:
         for word in words:

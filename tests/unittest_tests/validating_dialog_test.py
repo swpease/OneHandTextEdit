@@ -5,11 +5,12 @@ from PySide2.QtGui import QRegExpValidator
 from PySide2.QtWidgets import QApplication, QMessageBox, QLabel
 from PySide2.QtTest import QTest
 
-from validating_dialog import ValidatingDialog
+from OHTE.validating_dialog import ValidatingDialog
 
 
 def setUpModule():
-    app = QApplication([])
+    if QApplication.instance() is None:
+        app = QApplication([])
 
 
 class TestWidget(unittest.TestCase):
@@ -24,6 +25,7 @@ class TestWidget(unittest.TestCase):
         help_popup = QMessageBox(QMessageBox.Information, "hi", "hi")
         self.vd = ValidatingDialog(validator, help_popup)
         self.vd.show()
+        # print(self.vd.children()[-1].findChildren(QPushButton)[0].text())
         self.vd.submitted.connect(self.label_slot)
 
     def test_btns(self):
@@ -54,11 +56,11 @@ class TestWidget(unittest.TestCase):
         self.assertEqual(self.label.text(), 'x')
 
     def test_cancel(self):
-        # This is blocking... not sure how to get around it.
+        # Using a mock, and in the pytest tests.
         pass
 
     def test_help(self):
-        # This is blocking... not sure how to get around it.
+        # Using a mock, and in the pytest tests.
         pass
 
 
