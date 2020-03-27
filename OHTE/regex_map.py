@@ -204,19 +204,22 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     return  # No matched, so return None.
 
 
-def add_word_to_dict(word: str, regex_map: Dict[str, Entry]) -> None:
+def add_word_to_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
     """
-    Add a word to a regex map dictionary.
+    Add a word to a regex map dictionary. Mutates the regex_map to include word.
     :param word: Word to add to dictionary.
     :param regex_map: Dictionary to add word to.
-    :return: None. Mutates the regex_map to include word.
+    :return: True if word added. False if already exists.
     """
     regex = word_to_lc_regex(word)
     entry = regex_map.get(regex)
     if entry is not None:
-        entry['words'].append(word)
+        if word not in entry['words']:
+            entry['words'].append(word)
+            return True
     else:
         regex_map[regex]: Entry = {'default': word, 'words': [word]}
+        return True
 
 
 def word_to_lc_regex(word: str) -> str:

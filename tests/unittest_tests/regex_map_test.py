@@ -150,6 +150,11 @@ class TestAddWord(unittest.TestCase):
         os.remove(cls.src)
         os.remove(cls.dest)
 
+    def test_duplicate_word(self):
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        add_word_to_dict('may', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+
     def test_existing_entry(self):
         self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
         add_word_to_dict('cay', self.regex_map)
