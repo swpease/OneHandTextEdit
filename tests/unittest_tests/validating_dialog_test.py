@@ -25,6 +25,7 @@ class TestWidget(unittest.TestCase):
         help_popup = QMessageBox(QMessageBox.Information, "hi", "hi")
         self.vd = ValidatingDialog(validator, help_popup)
         self.vd.show()
+        # print(self.vd.children()[-1].findChildren(QPushButton)[0].text())
         self.vd.submitted.connect(self.label_slot)
 
     def test_btns(self):
@@ -55,11 +56,11 @@ class TestWidget(unittest.TestCase):
         self.assertEqual(self.label.text(), 'x')
 
     def test_cancel(self):
-        # This is blocking... not sure how to get around it.
+        # Using a mock, and in the pytest tests.
         pass
 
     def test_help(self):
-        # This is blocking... not sure how to get around it.
+        # Using a mock, and in the pytest tests.
         pass
 
 
