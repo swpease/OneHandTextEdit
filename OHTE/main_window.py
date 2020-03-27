@@ -1,8 +1,9 @@
-from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream
-from PySide2.QtGui import QIcon, QKeySequence
+from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
+from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox
 
-from textedit import MyPlainTextEdit
+from OHTE.textedit import MyPlainTextEdit
+from OHTE.validating_dialog import ValidatingDialog
 
 import ohte_rc
 
@@ -123,6 +124,14 @@ class MainWindow(QMainWindow):
                                     statusTip="Show the Qt library's About box",
                                     triggered=QApplication.instance().aboutQt)
 
+        self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
+                                    statusTip="Add a word to the dictionary",
+                                    triggered=self.show_add_word_dialog)
+
+        self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word", self,
+                                       statusTip="Delete a word from the dictionary",
+                                       triggered=self.show_delete_word_dialog)
+
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
 
@@ -141,6 +150,10 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
 
+        self.dict_menu = self.menuBar().addMenu('&Dictionary')
+        self.dict_menu.addAction(self.add_word_act)
+        self.dict_menu.addAction(self.delete_word_act)
+
         self.menuBar().addSeparator()
 
         self.help_menu = self.menuBar().addMenu("&Help")
@@ -157,6 +170,10 @@ class MainWindow(QMainWindow):
         self.edit_tool_bar.addAction(self.cut_act)
         self.edit_tool_bar.addAction(self.copy_act)
         self.edit_tool_bar.addAction(self.paste_act)
+
+        self.dict_tool_bar = self.addToolBar('Dictionary')
+        self.dict_tool_bar.addAction(self.add_word_act)
+        self.dict_tool_bar.addAction(self.delete_word_act)
 
     def create_status_bar(self):
         self.statusBar().showMessage("Ready")
@@ -264,6 +281,24 @@ class MainWindow(QMainWindow):
                 return widget
 
         return
+
+    def show_add_word_dialog(self):
+        regex = QRegExp(r'[A-Za-z]+([A-Za-z\'-]+[A-Za-z]+|[A-Za-z]*)')
+        validator = QRegExpValidator(regex)
+        # TODO set VD as parent.
+        help_dialog = QMessageBox(QMessageBox.Information, "OneHandTextEdit",
+                                  "A word can only contain letters (upper or lower case) and "
+                                  "contain (but not start or end with) - (dashes) and ' (apostrophes).",
+                                  buttons=QMessageBox.Ok)
+        add_dialog = ValidatingDialog(validator, help_dialog, input_label="Add word:", parent=self)
+        add_dialog.submitted.connect(lambda text: print(text))
+        add_dialog.show()
+        add_dialog.raise_()
+        add_dialog.activateWindow()
+        print(add_dialog)
+
+    def show_delete_word_dialog(self):
+        pass
 
 
 if __name__ == '__main__':
