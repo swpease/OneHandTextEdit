@@ -14,7 +14,8 @@ dest = 'test_out.json'
 
 
 def setUpModule():
-    app = QApplication([])
+    if QApplication.instance() is None:
+        app = QApplication([])
     words = ["e", "i", "the", "and", "ax", "it's", "den", "din", "ken", "en", "in", "hex", "he", "hi", "z"]
     with open(src, 'w') as f:
         for word in words:
@@ -25,7 +26,6 @@ def setUpModule():
 def tearDownModule():
     os.remove(src)
     os.remove(dest)
-    QApplication.instance().quit()
 
 
 class TestInsertMode(unittest.TestCase):

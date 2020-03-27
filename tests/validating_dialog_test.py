@@ -9,7 +9,8 @@ from OHTE.validating_dialog import ValidatingDialog
 
 
 def setUpModule():
-    app = QApplication([])
+    if QApplication.instance() is None:
+        app = QApplication([])
 
 
 class TestWidget(unittest.TestCase):
