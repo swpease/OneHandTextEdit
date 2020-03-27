@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 
-from OHTE.regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word
+from OHTE.regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word, add_word_to_dict
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -130,6 +130,35 @@ class TestRegexMapMaker(unittest.TestCase):
         with open(self.dest) as f:
             output = f.readline()
         self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the", "thi"]}, "^[b]$": {"default": "B", "words": ["B"]}}')
+
+
+class TestAddWord(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.src = 'test_words.txt'
+        cls.dest = 'test_out.json'
+        words = ["may", "cat"]
+        with open(cls.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        create_regex_map([cls.src], [True], cls.dest)
+        with open(cls.dest) as f:
+            cls.regex_map = json.load(f)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.src)
+        os.remove(cls.dest)
+
+    def test_existing_entry(self):
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        add_word_to_dict('cay', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
+
+    def test_no_entry(self):
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
+        add_word_to_dict('a', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}, '^[a;]$': {'default': 'a', 'words': ['a']}}")
 
 
 if __name__ == '__main__':
