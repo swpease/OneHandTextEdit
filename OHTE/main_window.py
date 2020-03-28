@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, Q
 
 from OHTE.textedit import MyPlainTextEdit
 from OHTE.validating_dialog import ValidatingDialog
+from OHTE.regex_map import add_word_to_dict
 
 import ohte_rc
 
@@ -20,6 +21,7 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.is_untitled = True
         self.cur_file = ''
+        self.dict_modified = False
         self.regex_map = regex_map
         self.text_edit = MyPlainTextEdit(regex_map)
         self.setCentralWidget(self.text_edit)
@@ -294,11 +296,22 @@ class MainWindow(QMainWindow):
                                   "contain (but not start or end with) - (dashes) and ' (apostrophes).",
                                   buttons=QMessageBox.Ok)
         add_dialog = ValidatingDialog(validator, help_dialog, input_label="Add word:", parent=self)
-        add_dialog.submitted.connect(lambda text: print(text))
+        add_dialog.submitted.connect(self.handle_add_word)
         add_dialog.show()
         add_dialog.raise_()
         add_dialog.activateWindow()
-        print(add_dialog)
+
+    def handle_add_word(self, word: str):
+        """
+        Adds word to dictionary and marks dictionary as modified.
+        :param word: Word to add to dictionary.
+        :return:
+        """
+        added: bool = add_word_to_dict(word, self.regex_map)
+        if added:
+            self.dict_modified = True
+        else:
+            QMessageBox.information(self, "One Hand Text Edit", "Word already in your dictionary")
 
     def show_delete_word_dialog(self):
         pass
