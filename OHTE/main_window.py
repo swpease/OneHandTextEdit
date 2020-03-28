@@ -1,3 +1,5 @@
+import json
+
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox
@@ -12,13 +14,14 @@ class MainWindow(QMainWindow):
     sequence_number = 1
     window_list = []
 
-    def __init__(self, file_name=''):
+    def __init__(self, regex_map, file_name=''):
         super().__init__()
 
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.is_untitled = True
         self.cur_file = ''
-        self.text_edit = MyPlainTextEdit()
+        self.regex_map = regex_map
+        self.text_edit = MyPlainTextEdit(regex_map)
         self.setCentralWidget(self.text_edit)
 
         self.create_actions()
@@ -46,7 +49,7 @@ class MainWindow(QMainWindow):
         self.setWindowModified(True)
 
     def new_file(self):
-        other = MainWindow()
+        other = MainWindow(self.regex_map)
         MainWindow.window_list.append(other)
         other.move(self.x() + 40, self.y() + 40)
         other.show()
@@ -64,7 +67,7 @@ class MainWindow(QMainWindow):
             if self.is_untitled and self.text_edit.document().isEmpty() and not self.isWindowModified():
                 self.load_file(file_name)
             else:
-                other = MainWindow(file_name)
+                other = MainWindow(self.regex_map, file_name)
                 if other.is_untitled:  # impossible?
                     del other
                     return
@@ -306,6 +309,10 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    mainWin = MainWindow()
+
+    with open('regex_map.json') as f:
+        regx_map: dict = json.load(f)
+
+    mainWin = MainWindow(regx_map)
     mainWin.show()
     sys.exit(app.exec_())
