@@ -2,7 +2,7 @@ import sys
 import json
 import re
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
@@ -17,9 +17,10 @@ class Mode(Enum):
 
 
 class MyPlainTextEdit(QPlainTextEdit):
-    def __init__(self, regex_map: str = 'regex_map.json'):
+    def __init__(self, regex_map: Dict[str, Entry]):
         super().__init__()  # Pass parent?
 
+        self.regex_map = regex_map
         self.mode = Mode.INSERT
         self.wordcheck_cursor: QTextCursor = self.textCursor()
         self.wordcheck_entry: Optional[Entry] = None
@@ -27,9 +28,6 @@ class MyPlainTextEdit(QPlainTextEdit):
         self.autocaps = True
 
         self.cursorPositionChanged.connect(self.handle_cursor_position_changed)
-
-        with open(regex_map) as f:
-            self.regex_map: dict = json.load(f)
 
     def next_word_replace(self):
         next_word = self.wordcheck_entry['words'][self.entry_idx % len(self.wordcheck_entry['words'])]
@@ -262,6 +260,8 @@ class MyPlainTextEdit(QPlainTextEdit):
 
 if __name__ == "__main__":
     app = QApplication([])
-    editor = MyPlainTextEdit()
+    with open('regex_map.json') as f:
+        regex_map: dict = json.load(f)
+    editor = MyPlainTextEdit(regex_map)
     editor.show()
     sys.exit(app.exec_())

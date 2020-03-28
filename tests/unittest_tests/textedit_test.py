@@ -1,5 +1,6 @@
 import unittest
 import os
+import json
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication
@@ -11,6 +12,7 @@ from OHTE.regex_map import create_regex_map
 
 src = 'test_words.txt'
 dest = 'test_out.json'
+regex_map: dict = {}
 
 
 def setUpModule():
@@ -22,6 +24,10 @@ def setUpModule():
             f.write("%s\n" % word)
     create_regex_map([src], [False], dest)
 
+    with open(dest) as f:
+        global regex_map
+        regex_map = json.load(f)
+
 
 def tearDownModule():
     os.remove(src)
@@ -30,7 +36,7 @@ def tearDownModule():
 
 class TestInsertMode(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_basic(self):
@@ -101,7 +107,7 @@ class TestInsertMode(unittest.TestCase):
 
 class TestModeSwitching(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_basic(self):
@@ -114,7 +120,7 @@ class TestModeSwitching(unittest.TestCase):
 
 class TestWordcheckModeAllowedKeys(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_typing(self):
@@ -143,7 +149,7 @@ class TestWordcheckModeAllowedKeys(unittest.TestCase):
 
 class TestWordcheckModeMovement(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_move_up(self):
@@ -189,7 +195,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
 
 class TestWordcheckModeHighlighting(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_highlighting_colors_different(self):
@@ -239,7 +245,7 @@ class TestWordcheckModeHighlighting(unittest.TestCase):
 
 class TestWordcheckModeCycling(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_missing_word(self):
@@ -313,7 +319,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
 
 class TestWordcheckModeCapsPreserving(unittest.TestCase):
     def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(dest)
+        self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_basic(self):
