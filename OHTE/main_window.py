@@ -1,4 +1,5 @@
 import json
+from typing import Callable
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
@@ -6,7 +7,7 @@ from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, Q
 
 from OHTE.textedit import MyPlainTextEdit
 from OHTE.validating_dialog import ValidatingDialog
-from OHTE.regex_map import add_word_to_dict
+from OHTE.regex_map import add_word_to_dict, del_word_from_dict
 
 import ohte_rc
 
@@ -135,7 +136,7 @@ class MainWindow(QMainWindow):
 
         self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word", self,
                                        statusTip="Delete a word from the dictionary",
-                                       triggered=self.show_delete_word_dialog)
+                                       triggered=self.show_del_word_dialog)
 
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
@@ -287,7 +288,7 @@ class MainWindow(QMainWindow):
 
         return
 
-    def show_add_word_dialog(self):
+    def show_validating_dialog(self, input_label: str, handler: Callable[[str], None]):
         regex = QRegExp(r'[A-Za-z]+([A-Za-z\'-]+[A-Za-z]+|[A-Za-z]*)')
         validator = QRegExpValidator(regex)
         # TODO set VD as parent.
@@ -295,11 +296,17 @@ class MainWindow(QMainWindow):
                                   "A word can only contain letters (upper or lower case) and "
                                   "contain (but not start or end with) - (dashes) and ' (apostrophes).",
                                   buttons=QMessageBox.Ok)
-        add_dialog = ValidatingDialog(validator, help_dialog, input_label="Add word:", parent=self)
-        add_dialog.submitted.connect(self.handle_add_word)
-        add_dialog.show()
-        add_dialog.raise_()
-        add_dialog.activateWindow()
+        dialog = ValidatingDialog(validator, help_dialog, input_label=input_label, parent=self)
+        dialog.submitted.connect(handler)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+    def show_add_word_dialog(self):
+        self.show_validating_dialog("Add word:", self.handle_add_word)
+
+    def show_del_word_dialog(self):
+        self.show_validating_dialog("Remove word:", self.handle_delete_word)
 
     def handle_add_word(self, word: str):
         """
@@ -313,8 +320,17 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.information(self, "One Hand Text Edit", "Word already in your dictionary")
 
-    def show_delete_word_dialog(self):
-        pass
+    def handle_delete_word(self, word: str):
+        """
+        Deletes word from dictionary and marks dictionary as modified.
+        :param word: Word to remove from dictionary.
+        :return:
+        """
+        deleted: bool = del_word_from_dict(word, self.regex_map)
+        if deleted:
+            self.dict_modified = True
+        else:
+            QMessageBox.information(self, "One Hand Text Edit", "Word not found in dictionary")
 
 
 if __name__ == '__main__':

@@ -54,3 +54,23 @@ class TestAddWord(object):
         qtbot.keyClick(vd, Qt.Key_Enter)
         QMessageBox.information.assert_called()
         assert not main_win.dict_modified
+
+
+class TestDelWord(object):
+    def test_del_missing_word(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.dict_tool_bar.findChildren(QToolButton)[2].click()
+        vd = main_win.findChildren(ValidatingDialog)[-1]
+        qtbot.keyClicks(vd.line_edit, 'mat')
+        qtbot.keyClick(vd, Qt.Key_Enter)
+        assert not main_win.dict_modified
+
+    def test_del_word(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.dict_tool_bar.findChildren(QToolButton)[2].click()
+        vd = main_win.findChildren(ValidatingDialog)[-1]
+        qtbot.keyClicks(vd.line_edit, 'may')
+        qtbot.keyClick(vd, Qt.Key_Enter)
+        assert main_win.dict_modified
