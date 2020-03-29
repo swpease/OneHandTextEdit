@@ -222,6 +222,27 @@ def add_word_to_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
         return True
 
 
+def del_word_from_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
+    """
+    Deletes a word from a regex map dictionary. Mutates the regex_map to remove word.
+    :param word: Word to remove from dictionary.
+    :param regex_map: Dictionary to remove word from.
+    :return: True if word removed. False if not in dictionary.
+    """
+    regex = word_to_lc_regex(word)
+    entry = regex_map.get(regex)
+
+    if entry is None or word not in entry['words']:
+        return False
+    else:
+        entry['words'].remove(word)
+        if len(entry['words']) == 0:
+            del regex_map[regex]
+        elif entry['default'] == word:
+            entry['default'] = entry['words'][0]
+        return True
+
+
 def word_to_lc_regex(word: str) -> str:
     """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
     regex = '^'

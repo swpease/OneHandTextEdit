@@ -2,7 +2,8 @@ import unittest
 import os
 import json
 
-from OHTE.regex_map import word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word, add_word_to_dict
+from OHTE.regex_map import (word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word,
+                            add_word_to_dict, del_word_from_dict)
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -164,6 +165,45 @@ class TestAddWord(unittest.TestCase):
         self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
         add_word_to_dict('a', self.regex_map)
         self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}, '^[a;]$': {'default': 'a', 'words': ['a']}}")
+
+
+class TestDelWord(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.src = 'test_words.txt'
+        cls.dest = 'test_out.json'
+        words = ["may", "cat"]
+        with open(cls.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        create_regex_map([cls.src], [True], cls.dest)
+        with open(cls.dest) as f:
+            cls.regex_map = json.load(f)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.src)
+        os.remove(cls.dest)
+
+    def test_missing_entry(self):
+        res = del_word_from_dict('x', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertFalse(res)
+
+    def test_missing_word(self):
+        res = del_word_from_dict('mat', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertFalse(res)
+
+    def test_remove_default(self):
+        res = del_word_from_dict('may', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['cat']}}")
+        self.assertTrue(res)
+
+    def test_remove_only(self):
+        res = del_word_from_dict('cat', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{}")
+        self.assertTrue(res)
 
 
 if __name__ == '__main__':
