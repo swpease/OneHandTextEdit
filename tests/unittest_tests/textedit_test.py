@@ -173,15 +173,18 @@ class TestWordcheckModeMovement(unittest.TestCase):
         self.assertEqual(self.editor.textCursor().blockNumber(), 2)
         self.assertEqual(self.editor.toPlainText(), "\n\n", msg="text modified")
 
-    def test_move_left(self):
+    def test_move_left_then_right(self):
         QTest.keyClicks(self.editor, 'the box')
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
         QTest.keyClick(self.editor, Qt.Key_S)
         QTest.keyClick(self.editor, Qt.Key_H)
-        self.assertEqual(self.editor.textCursor().position(), 0)
+        self.assertEqual(self.editor.textCursor().position(), 0, msg="move by word")
+        QTest.keyClick(self.editor, Qt.Key_V)
+        QTest.keyClick(self.editor, Qt.Key_M)
+        self.assertEqual(self.editor.textCursor().position(), 2, msg="move by char")
         self.assertEqual(self.editor.toPlainText(), "the box", msg="text modified")
 
-    def test_move_right(self):
+    def test_move_right_then_left(self):
         QTest.keyClicks(self.editor, 'the box is')
         QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
         start_cur = self.editor.textCursor()
@@ -189,7 +192,10 @@ class TestWordcheckModeMovement(unittest.TestCase):
         self.editor.setTextCursor(start_cur)
         QTest.keyClick(self.editor, Qt.Key_G)
         QTest.keyClick(self.editor, Qt.Key_L)
-        self.assertEqual(self.editor.textCursor().position(), 8)
+        self.assertEqual(self.editor.textCursor().position(), 8, msg="move by word")
+        QTest.keyClick(self.editor, Qt.Key_C)
+        QTest.keyClick(self.editor, Qt.Key_N)
+        self.assertEqual(self.editor.textCursor().position(), 6, msg="move by char")
         self.assertEqual(self.editor.toPlainText(), "the box is", msg="text modified")
 
 

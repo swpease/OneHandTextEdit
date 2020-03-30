@@ -189,6 +189,14 @@ class MyPlainTextEdit(QPlainTextEdit):
                 mapped_e = QKeyEvent(e.type(), Qt.Key_Up, Qt.KeypadModifier,
                                      autorep=e.isAutoRepeat(), count=e.count())
                 QApplication.sendEvent(self, mapped_e)
+            elif e.key() in [Qt.Key_C, Qt.Key_N]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Left, Qt.KeypadModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+            elif e.key() in [Qt.Key_V, Qt.Key_M]:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Right, Qt.KeypadModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
 
             elif e.key() in [Qt.Key_R, Qt.Key_U] and e.type() == QKeyEvent.KeyPress:
                 if self.wordcheck_entry is not None:
