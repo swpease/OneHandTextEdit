@@ -85,7 +85,7 @@ class MyPlainTextEdit(QPlainTextEdit):
 
         return (front_word, back_word)
 
-    def handle_cursor_position_changed(self):
+    def setup_wordcheck_for_word_under_cursor(self):
         if self.mode == Mode.WORDCHECK:
             self.wordcheck_cursor = self.textCursor()
             front_word, back_word = self.get_word_under_cursor(self.wordcheck_cursor)
@@ -96,6 +96,10 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(word)), mode=QTextCursor.KeepAnchor)
             self.highlight_word(self.wordcheck_cursor, self.wordcheck_entry)
             self.correct_index()
+
+    def handle_cursor_position_changed(self):
+        if self.mode == Mode.WORDCHECK:
+            self.setup_wordcheck_for_word_under_cursor()
 
     def highlight_word(self, cursor: QTextCursor, entry: Optional[Entry]):
         selection = QTextEdit.ExtraSelection()
@@ -241,6 +245,8 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
             if self.mode == Mode.INSERT:
                 self.setExtraSelections([])
+            else:
+                self.setup_wordcheck_for_word_under_cursor()
 
         elif self.mode == Mode.INSERT:
             if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 import os
 import json
 
@@ -116,6 +117,26 @@ class TestModeSwitching(unittest.TestCase):
         self.assertEqual(self.editor.mode, Mode.WORDCHECK)
         QTest.keyClick(self.editor, Qt.Key_I, modifier=Qt.ControlModifier)
         self.assertEqual(self.editor.mode, Mode.INSERT)
+
+    def test_wc_enabled(self):
+        self.editor.setup_wordcheck_for_word_under_cursor = MagicMock()
+        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+        self.editor.setup_wordcheck_for_word_under_cursor.assert_called()
+
+    def test_highlighting(self):
+        QTest.keyClicks(self.editor, 'ilknkl')
+
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = self.editor.textCursor()
+        default_col = cur.charFormat().background().color().getRgb()  # NB: does not get ExtraSelections color
+
+        selection = self.editor.extraSelections()[0]
+        col0 = selection.format.background().color().getRgb()
+        self.assertNotEqual(default_col, col0)
+
+        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # insert mode
+        self.assertEqual([], self.editor.extraSelections())
 
 
 class TestWordcheckModeAllowedKeys(unittest.TestCase):
