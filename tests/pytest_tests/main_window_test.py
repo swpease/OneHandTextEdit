@@ -29,7 +29,7 @@ def main_win():
 
     with open(dest) as f:
         regex_map = json.load(f)
-    yield MainWindow(regex_map)
+    yield MainWindow(regex_map, dict_src=dest)
 
     os.remove(src)
     os.remove(dest)
@@ -74,3 +74,20 @@ class TestDelWord(object):
         qtbot.keyClicks(vd.line_edit, 'may')
         qtbot.keyClick(vd, Qt.Key_Enter)
         assert main_win.dict_modified
+
+
+class TestSaveChanges(object):
+    def test_save(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.dict_tool_bar.findChildren(QToolButton)[1].click()
+        vd = main_win.findChildren(ValidatingDialog)[-1]
+        qtbot.keyClicks(vd.line_edit, 'mat')
+        qtbot.keyClick(vd, Qt.Key_Enter)
+        old_dict = main_win.regex_map
+        qtbot.keyClick(main_win, Qt.Key_N, Qt.ControlModifier)  # Test env breaks if you close only QMainWindow
+        main_win.close()
+
+        with open('test_out.json') as f:
+            regex_map = json.load(f)
+        assert old_dict == regex_map

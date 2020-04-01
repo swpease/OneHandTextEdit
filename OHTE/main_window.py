@@ -16,13 +16,14 @@ class MainWindow(QMainWindow):
     sequence_number = 1
     window_list = []
 
-    def __init__(self, regex_map, file_name=''):
+    def __init__(self, regex_map, file_name='', dict_src='regex_map.json'):
         super().__init__()
 
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.is_untitled = True
         self.cur_file = ''
         self.dict_modified = False
+        self.dict_src = dict_src
         self.regex_map = regex_map
         self.text_edit = MyPlainTextEdit(regex_map)
         self.setCentralWidget(self.text_edit)
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow):
 
         # self.text_edit.document().contentsChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(self.document_was_modified)
+
         if file_name:
             self.load_file(file_name)
         else:
@@ -44,6 +46,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.maybe_save():
             self.write_settings()
+            if self.dict_modified:
+                # TODO: thread
+                with open(self.dict_src, 'w') as f:
+                    json.dump(self.regex_map, f)
             event.accept()
         else:
             event.ignore()
@@ -339,9 +345,10 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    with open('regex_map.json') as f:
+    dict_src = 'regex_map.json'
+    with open(dict_src) as f:
         regx_map: dict = json.load(f)
 
-    mainWin = MainWindow(regx_map)
+    mainWin = MainWindow(regx_map, dict_src=dict_src)
     mainWin.show()
     sys.exit(app.exec_())
