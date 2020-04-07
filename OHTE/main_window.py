@@ -180,6 +180,10 @@ class MainWindow(QMainWindow):
                                        triggered=self.show_del_word_dialog)
         self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
 
+        self.toggle_mode_act = QAction("Switch Mode", self,
+                                       triggered=self.text_edit.handle_mode_toggle)
+        self.toggle_mode_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_I), QKeySequence(Qt.CTRL + Qt.Key_E)])
+
         # Connections
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
@@ -215,6 +219,8 @@ class MainWindow(QMainWindow):
         self.dict_menu = self.menuBar().addMenu('&Dictionary')
         self.dict_menu.addAction(self.add_word_act)
         self.dict_menu.addAction(self.delete_word_act)
+        self.dict_menu.addSeparator()
+        self.dict_menu.addAction(self.toggle_mode_act)
 
         self.menuBar().addSeparator()
 

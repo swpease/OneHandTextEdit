@@ -240,15 +240,15 @@ class MyPlainTextEdit(QPlainTextEdit):
                                          autorep=e.isAutoRepeat(), count=e.count())
                     QApplication.sendEvent(self, mapped_e)
 
-    def keyPressEvent(self, e: QKeyEvent):
-        if e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
-            self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
-            if self.mode == Mode.INSERT:
-                self.setExtraSelections([])
-            else:
-                self.setup_wordcheck_for_word_under_cursor()
+    def handle_mode_toggle(self):
+        self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
+        if self.mode == Mode.INSERT:
+            self.setExtraSelections([])
+        else:
+            self.setup_wordcheck_for_word_under_cursor()
 
-        elif self.mode == Mode.INSERT:
+    def keyPressEvent(self, e: QKeyEvent):
+        if self.mode == Mode.INSERT:
             if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
                 self.process_previous_word()
             super().keyPressEvent(e)
@@ -263,7 +263,6 @@ class MyPlainTextEdit(QPlainTextEdit):
             super().keyPressEvent(e)
 
     def keyReleaseEvent(self, e: QKeyEvent):
-        # TODO: intercepted keyPressEvent counterparts?
         if self.mode == Mode.WORDCHECK:
             if e.modifiers() in [Qt.NoModifier, Qt.ShiftModifier]:
                 self.handle_wordcheck_key_events(e)

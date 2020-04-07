@@ -106,46 +106,13 @@ class TestInsertMode(unittest.TestCase):
         self.assertEqual(self.editor.textCursor().block().text(), '"(\'the?!\')"..  ')
 
 
-class TestModeSwitching(unittest.TestCase):
-    def setUp(self) -> None:
-        self.editor = MyPlainTextEdit(regex_map)
-        self.editor.autocaps = False
-
-    def test_basic(self):
-        self.assertEqual(self.editor.mode, Mode.INSERT)
-        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
-        self.assertEqual(self.editor.mode, Mode.WORDCHECK)
-        QTest.keyClick(self.editor, Qt.Key_I, modifier=Qt.ControlModifier)
-        self.assertEqual(self.editor.mode, Mode.INSERT)
-
-    def test_wc_enabled(self):
-        self.editor.setup_wordcheck_for_word_under_cursor = MagicMock()
-        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
-        self.editor.setup_wordcheck_for_word_under_cursor.assert_called()
-
-    def test_highlighting(self):
-        QTest.keyClicks(self.editor, 'ilknkl')
-
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
-
-        cur = self.editor.textCursor()
-        default_col = cur.charFormat().background().color().getRgb()  # NB: does not get ExtraSelections color
-
-        selection = self.editor.extraSelections()[0]
-        col0 = selection.format.background().color().getRgb()
-        self.assertNotEqual(default_col, col0)
-
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # insert mode
-        self.assertEqual([], self.editor.extraSelections())
-
-
 class TestWordcheckModeAllowedKeys(unittest.TestCase):
     def setUp(self) -> None:
         self.editor = MyPlainTextEdit(regex_map)
         self.editor.autocaps = False
 
     def test_typing(self):
-        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
         QTest.keyClicks(self.editor, 'xza,.;')
         self.assertEqual(self.editor.textCursor().block().text(), ',.;,.;')
         self.editor.clear()
@@ -157,7 +124,7 @@ class TestWordcheckModeAllowedKeys(unittest.TestCase):
     def test_hot_word_replacement(self):
         # this test handles getting to "hi," from its default coersion to "hex"
         QTest.keyClicks(self.editor, 'hi, ')  # coerced to "hex"
-        QTest.keyClick(self.editor, Qt.Key_E, modifier=Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
 
         cur = self.editor.textCursor()
         cur.setPosition(3)
@@ -176,7 +143,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
     def test_move_up(self):
         QTest.keyClick(self.editor, Qt.Key_Return)
         QTest.keyClick(self.editor, Qt.Key_Return)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
         QTest.keyClick(self.editor, Qt.Key_K)
         QTest.keyClick(self.editor, Qt.Key_D)
         self.assertEqual(self.editor.textCursor().blockNumber(), 0)
@@ -188,7 +155,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
         start_cur = self.editor.textCursor()
         start_cur.setPosition(0)
         self.editor.setTextCursor(start_cur)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
         QTest.keyClick(self.editor, Qt.Key_F)
         QTest.keyClick(self.editor, Qt.Key_J)
         self.assertEqual(self.editor.textCursor().blockNumber(), 2)
@@ -196,7 +163,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
 
     def test_move_left_then_right(self):
         QTest.keyClicks(self.editor, 'the box')
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
         QTest.keyClick(self.editor, Qt.Key_S)
         QTest.keyClick(self.editor, Qt.Key_H)
         self.assertEqual(self.editor.textCursor().position(), 0, msg="move by word")
@@ -207,7 +174,7 @@ class TestWordcheckModeMovement(unittest.TestCase):
 
     def test_move_right_then_left(self):
         QTest.keyClicks(self.editor, 'the box is')
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)
+        self.editor.handle_mode_toggle()
         start_cur = self.editor.textCursor()
         start_cur.setPosition(0)
         self.editor.setTextCursor(start_cur)
@@ -227,7 +194,7 @@ class TestWordcheckModeHighlighting(unittest.TestCase):
 
     def test_highlighting_colors_different(self):
         QTest.keyClicks(self.editor, 'i x i')  # Don't coerce ending `i`
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+        self.editor.handle_mode_toggle()  # wordcheck mode
 
         cur = self.editor.textCursor()
         default_col = cur.charFormat().background().color().getRgb()
@@ -278,7 +245,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
     def test_missing_word(self):
         text = 'jkljkl e den '
         QTest.keyClicks(self.editor, text)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+        self.editor.handle_mode_toggle()  # wordcheck mode
 
         cur = self.editor.textCursor()
         cur.setPosition(0)
@@ -292,7 +259,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
         text = 'e den '
         alt_text = 'i den '
         QTest.keyClicks(self.editor, text)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+        self.editor.handle_mode_toggle()  # wordcheck mode
 
         cur = self.editor.textCursor()
         default_col = cur.charFormat().background().color().getRgb()
@@ -320,7 +287,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
         text = 'e den '
         alt_text = 'i den '
         QTest.keyClicks(self.editor, text)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+        self.editor.handle_mode_toggle()  # wordcheck mode
 
         cur = self.editor.textCursor()
         cur.setPosition(0)
@@ -352,7 +319,7 @@ class TestWordcheckModeCapsPreserving(unittest.TestCase):
     def test_basic(self):
         text = 'En '
         QTest.keyClicks(self.editor, text)
-        QTest.keyClick(self.editor, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+        self.editor.handle_mode_toggle()  # wordcheck mode
 
         cur = self.editor.textCursor()
         cur.setPosition(0)

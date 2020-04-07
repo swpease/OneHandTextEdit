@@ -9,6 +9,7 @@ from PySide2.QtCore import Qt
 from OHTE.regex_map import create_regex_map
 from OHTE.main_window import MainWindow
 from OHTE.validating_dialog import ValidatingDialog
+from OHTE.textedit import Mode
 
 
 # Mocking modal.
@@ -91,3 +92,41 @@ class TestSaveChanges(object):
         with open('test_out.json') as f:
             regex_map = json.load(f)
         assert old_dict == regex_map
+
+
+class TestModeSwitch(object):
+    def test_basic(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        assert main_win.text_edit.mode == Mode.INSERT
+        qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+        assert main_win.text_edit.mode == Mode.WORDCHECK
+        qtbot.keyClick(main_win.text_edit, Qt.Key_I, modifier=Qt.ControlModifier)
+        assert main_win.text_edit.mode == Mode.INSERT
+
+    def test_wc_enabled(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.text_edit.setup_wordcheck_for_word_under_cursor = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+        main_win.text_edit.setup_wordcheck_for_word_under_cursor.assert_called()
+
+    def test_highlighting(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        QMessageBox.warning = MagicMock()  # suppress popup
+
+        qtbot.keyClicks(main_win.text_edit, 'ilknkl')
+
+        qtbot.keyClick(main_win.text_edit, Qt.Key_E, Qt.ControlModifier)  # wordcheck mode
+
+        cur = main_win.text_edit.textCursor()
+        default_col = cur.charFormat().background().color().getRgb()  # NB: does not get ExtraSelections color
+
+        selection = main_win.text_edit.extraSelections()[0]
+        col0 = selection.format.background().color().getRgb()
+        assert default_col != col0
+
+        qtbot.keyClick(main_win.text_edit, Qt.Key_E, Qt.ControlModifier)  # insert mode
+        assert [] == main_win.text_edit.extraSelections()
+
