@@ -241,12 +241,25 @@ class MyPlainTextEdit(QPlainTextEdit):
                     QApplication.sendEvent(self, mapped_e)
 
     def keyPressEvent(self, e: QKeyEvent):
-        if e.modifiers() == Qt.ControlModifier and e.key() in [Qt.Key_E, Qt.Key_I]:
-            self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
-            if self.mode == Mode.INSERT:
-                self.setExtraSelections([])
+        if e.modifiers() == Qt.ControlModifier:
+            # Toggle modes
+            if e.key() in [Qt.Key_E, Qt.Key_I]:
+                self.mode = Mode.WORDCHECK if self.mode == Mode.INSERT else Mode.INSERT
+                if self.mode == Mode.INSERT:
+                    self.setExtraSelections([])
+                else:
+                    self.setup_wordcheck_for_word_under_cursor()
+            # Mirror shortcuts.
+            elif e.key() == Qt.Key_Semicolon:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_A, Qt.ControlModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
+            elif e.key() == Qt.Key_Slash:
+                mapped_e = QKeyEvent(e.type(), Qt.Key_Z, Qt.ControlModifier,
+                                     autorep=e.isAutoRepeat(), count=e.count())
+                QApplication.sendEvent(self, mapped_e)
             else:
-                self.setup_wordcheck_for_word_under_cursor()
+                super().keyPressEvent(e)
 
         elif self.mode == Mode.INSERT:
             if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
@@ -263,6 +276,7 @@ class MyPlainTextEdit(QPlainTextEdit):
             super().keyPressEvent(e)
 
     def keyReleaseEvent(self, e: QKeyEvent):
+        # TODO: intercepted keyPressEvent counterparts?
         if self.mode == Mode.WORDCHECK:
             if e.modifiers() in [Qt.NoModifier, Qt.ShiftModifier]:
                 self.handle_wordcheck_key_events(e)

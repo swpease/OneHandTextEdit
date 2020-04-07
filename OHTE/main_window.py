@@ -88,45 +88,52 @@ class MainWindow(QMainWindow):
     def about(self):
         QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
 
+    # noinspection PyAttributeOutsideInit
     def create_actions(self):
         self.new_act = QAction(QIcon(':/images/new.png'), "&New", self,
-                               shortcut=QKeySequence.New, statusTip="Create a new file",
+                               statusTip="Create a new file",
                                triggered=self.new_file)
+        self.new_act.setShortcuts([QKeySequence.New, QKeySequence(Qt.CTRL + Qt.Key_B)])
 
         self.open_act = QAction(QIcon(':/images/open.png'), "&Open...", self,
-                                shortcut=QKeySequence.Open, statusTip="Open an existing file",
+                                statusTip="Open an existing file",
                                 triggered=self.open)
+        self.open_act.setShortcuts([QKeySequence.Open, QKeySequence(Qt.CTRL + Qt.Key_T)])
 
         self.save_act = QAction(QIcon(':/images/save.png'), "&Save", self,
-                                shortcut=QKeySequence.Save,
                                 statusTip="Save the document to disk", triggered=self.save)
+        self.save_act.setShortcuts([QKeySequence.Save, QKeySequence(Qt.CTRL + Qt.Key_L)])
 
         self.save_as_act = QAction("Save &As...", self,
-                                   shortcut=QKeySequence.SaveAs,
                                    statusTip="Save the document under a new name",
                                    triggered=self.save_as)
+        self.save_as_act.setShortcuts([QKeySequence.SaveAs, QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_L)])
 
-        self.close_act = QAction("&Close", self, shortcut="Ctrl+W",
+        self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
+        self.close_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_W), QKeySequence(Qt.CTRL + Qt.Key_BracketRight)])
 
-        self.exit_act = QAction("E&xit", self, shortcut="Ctrl+Q",
+        self.exit_act = QAction("E&xit", self,
                                 statusTip="Exit the application",
                                 triggered=QApplication.instance().closeAllWindows)
+        self.exit_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_Q), QKeySequence(Qt.CTRL + Qt.Key_BracketLeft)])
 
         self.cut_act = QAction(QIcon(':/images/cut.png'), "Cu&t", self,
-                               enabled=False, shortcut=QKeySequence.Cut,
+                               enabled=False,
                                statusTip="Cut the current selection's contents to the clipboard",
                                triggered=self.text_edit.cut)
+        self.cut_act.setShortcuts([QKeySequence.Cut, QKeySequence(Qt.CTRL + Qt.Key_Period)])
 
         self.copy_act = QAction(QIcon(':/images/copy.png'), "&Copy", self,
-                                enabled=False, shortcut=QKeySequence.Copy,
+                                enabled=False,
                                 statusTip="Copy the current selection's contents to the clipboard",
                                 triggered=self.text_edit.copy)
+        self.copy_act.setShortcuts([QKeySequence.Copy, QKeySequence(Qt.CTRL + Qt.Key_Comma)])
 
         self.paste_act = QAction(QIcon(':/images/paste.png'), "&Paste", self,
-                                 shortcut=QKeySequence.Paste,
                                  statusTip="Paste the clipboard's contents into the current selection",
                                  triggered=self.text_edit.paste)
+        self.paste_act.setShortcuts([QKeySequence.Paste, QKeySequence(Qt.CTRL + Qt.Key_M)])
 
         self.about_act = QAction("&About", self,
                                  statusTip="Show the application's About box",
@@ -139,14 +146,19 @@ class MainWindow(QMainWindow):
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
                                     statusTip="Add a word to the dictionary",
                                     triggered=self.show_add_word_dialog)
+        # Custom shortcuts
+        self.add_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_J), QKeySequence(Qt.CTRL + Qt.Key_G)])
 
         self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word", self,
                                        statusTip="Delete a word from the dictionary",
                                        triggered=self.show_del_word_dialog)
+        # Custom shortcuts
+        self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
 
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
 
+    # noinspection PyAttributeOutsideInit
     def create_menus(self):
         self.file_menu = self.menuBar().addMenu("&File")
         self.file_menu.addAction(self.new_act)
@@ -172,6 +184,7 @@ class MainWindow(QMainWindow):
         self.help_menu.addAction(self.about_act)
         self.help_menu.addAction(self.about_Qt_act)
 
+    # noinspection PyAttributeOutsideInit
     def create_tool_bars(self):
         self.file_tool_bar = self.addToolBar("File")
         self.file_tool_bar.addAction(self.new_act)
