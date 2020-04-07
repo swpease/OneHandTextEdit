@@ -121,6 +121,11 @@ class MainWindow(QMainWindow):
         self.exit_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_Q), QKeySequence(Qt.CTRL + Qt.Key_BracketLeft)])
 
         # Edit
+        self.undo_act = QAction("Undo", self,
+                                enabled=False,
+                                triggered=self.text_edit.undo)
+        self.undo_act.setShortcuts([QKeySequence.Undo, QKeySequence(Qt.CTRL + Qt.Key_Slash)])
+
         self.cut_act = QAction(QIcon(':/images/cut.png'), "Cu&t", self,
                                enabled=False,
                                statusTip="Cut the current selection's contents to the clipboard",
@@ -173,6 +178,7 @@ class MainWindow(QMainWindow):
         # Connections
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
+        self.text_edit.undoAvailable.connect(self.undo_act.setEnabled)
 
     # noinspection PyAttributeOutsideInit
     def create_menus(self):
@@ -186,6 +192,8 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.exit_act)
 
         self.edit_menu = self.menuBar().addMenu("&Edit")
+        self.edit_menu.addAction(self.undo_act)
+        self.edit_menu.addSeparator()
         self.edit_menu.addAction(self.cut_act)
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
