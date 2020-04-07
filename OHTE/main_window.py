@@ -91,6 +91,7 @@ class MainWindow(QMainWindow):
 
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
+        # File
         self.new_act = QAction(QIcon(':/images/new.png'), "&New", self,
                                statusTip="Create a new file",
                                triggered=self.new_file)
@@ -119,6 +120,7 @@ class MainWindow(QMainWindow):
                                 triggered=QApplication.instance().closeAllWindows)
         self.exit_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_Q), QKeySequence(Qt.CTRL + Qt.Key_BracketLeft)])
 
+        # Edit
         self.cut_act = QAction(QIcon(':/images/cut.png'), "Cu&t", self,
                                enabled=False,
                                statusTip="Cut the current selection's contents to the clipboard",
@@ -136,6 +138,7 @@ class MainWindow(QMainWindow):
                                  triggered=self.text_edit.paste)
         self.paste_act.setShortcuts([QKeySequence.Paste, QKeySequence(Qt.CTRL + Qt.Key_M)])
 
+        # About
         self.about_act = QAction("&About", self,
                                  statusTip="Show the application's About box",
                                  triggered=self.about)
@@ -144,16 +147,24 @@ class MainWindow(QMainWindow):
                                     statusTip="Show the Qt library's About box",
                                     triggered=QApplication.instance().aboutQt)
 
+        # View
+        self.zoom_in_act = QAction("Zoom In", self,
+                                   triggered=self.text_edit.zoomIn,
+                                   shortcut=QKeySequence.ZoomIn)
+
+        self.zoom_out_act = QAction("Zoom Out", self,
+                                    triggered=self.text_edit.zoomOut,
+                                    shortcut=QKeySequence.ZoomOut)
+
+        # Dictionary
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
                                     statusTip="Add a word to the dictionary",
                                     triggered=self.show_add_word_dialog)
-        # Custom shortcuts
         self.add_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_J), QKeySequence(Qt.CTRL + Qt.Key_G)])
 
         self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word", self,
                                        statusTip="Delete a word from the dictionary",
                                        triggered=self.show_del_word_dialog)
-        # Custom shortcuts
         self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
 
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
@@ -174,6 +185,10 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.cut_act)
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
+
+        self.view_menu = self.menuBar().addMenu("&View")
+        self.view_menu.addAction(self.zoom_in_act)
+        self.view_menu.addAction(self.zoom_out_act)
 
         self.dict_menu = self.menuBar().addMenu('&Dictionary')
         self.dict_menu.addAction(self.add_word_act)
