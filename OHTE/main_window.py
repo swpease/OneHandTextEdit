@@ -15,6 +15,7 @@ import ohte_rc
 class MainWindow(QMainWindow):
     sequence_number = 1
     window_list = []
+    dict_modified = False
 
     def __init__(self, regex_map, file_name='', dict_src='regex_map.json'):
         super().__init__()
@@ -22,7 +23,6 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.is_untitled = True
         self.cur_file = ''
-        self.dict_modified = False
         self.dict_src = dict_src
         self.regex_map = regex_map
         self.text_edit = MyPlainTextEdit(regex_map)
@@ -46,10 +46,11 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.maybe_save():
             self.write_settings()
-            if self.dict_modified:
-                # TODO: thread
+            # TODO: move to slot.
+            if MainWindow.dict_modified:
                 with open(self.dict_src, 'w') as f:
                     json.dump(self.regex_map, f)
+                MainWindow.dict_modified = False
             event.accept()
         else:
             event.ignore()
@@ -335,7 +336,7 @@ class MainWindow(QMainWindow):
         """
         added: bool = add_word_to_dict(word, self.regex_map)
         if added:
-            self.dict_modified = True
+            MainWindow.dict_modified = True
         else:
             QMessageBox.information(self, "One Hand Text Edit", "Word already in your dictionary")
 
@@ -347,7 +348,7 @@ class MainWindow(QMainWindow):
         """
         deleted: bool = del_word_from_dict(word, self.regex_map)
         if deleted:
-            self.dict_modified = True
+            MainWindow.dict_modified = True
         else:
             QMessageBox.information(self, "One Hand Text Edit", "Word not found in dictionary")
 
