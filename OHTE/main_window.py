@@ -138,6 +138,9 @@ class MainWindow(QMainWindow):
                                  triggered=self.text_edit.paste)
         self.paste_act.setShortcuts([QKeySequence.Paste, QKeySequence(Qt.CTRL + Qt.Key_M)])
 
+        self.select_all_act = QAction("Select All", self, triggered=self.text_edit.selectAll)
+        self.select_all_act.setShortcuts([QKeySequence.SelectAll, QKeySequence(Qt.CTRL + Qt.Key_Semicolon)])
+
         # About
         self.about_act = QAction("&About", self,
                                  statusTip="Show the application's About box",
@@ -167,6 +170,7 @@ class MainWindow(QMainWindow):
                                        triggered=self.show_del_word_dialog)
         self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
 
+        # Connections
         self.text_edit.copyAvailable.connect(self.cut_act.setEnabled)
         self.text_edit.copyAvailable.connect(self.copy_act.setEnabled)
 
@@ -185,10 +189,13 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.cut_act)
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
+        self.edit_menu.addAction(self.select_all_act)
 
         self.view_menu = self.menuBar().addMenu("&View")
         self.view_menu.addAction(self.zoom_in_act)
         self.view_menu.addAction(self.zoom_out_act)
+
+        self.window_menu = self.menuBar().addMenu("&Window")
 
         self.dict_menu = self.menuBar().addMenu('&Dictionary')
         self.dict_menu.addAction(self.add_word_act)

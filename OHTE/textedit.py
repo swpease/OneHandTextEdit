@@ -250,10 +250,6 @@ class MyPlainTextEdit(QPlainTextEdit):
                 else:
                     self.setup_wordcheck_for_word_under_cursor()
             # Mirror shortcuts.
-            elif e.key() == Qt.Key_Semicolon:
-                mapped_e = QKeyEvent(e.type(), Qt.Key_A, Qt.ControlModifier,
-                                     autorep=e.isAutoRepeat(), count=e.count())
-                QApplication.sendEvent(self, mapped_e)
             elif e.key() == Qt.Key_Slash:
                 mapped_e = QKeyEvent(e.type(), Qt.Key_Z, Qt.ControlModifier,
                                      autorep=e.isAutoRepeat(), count=e.count())
