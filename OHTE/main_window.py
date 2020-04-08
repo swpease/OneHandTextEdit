@@ -27,6 +27,8 @@ class MainWindow(QMainWindow):
         self.dict_src = dict_src
         self.regex_map = regex_map
         self.text_edit = MyPlainTextEdit(regex_map)
+        self.md_text_edit = QTextEdit()
+        self.md_text_edit.setReadOnly(True)
         self.setCentralWidget(self.text_edit)
 
         self.create_actions()
@@ -38,6 +40,7 @@ class MainWindow(QMainWindow):
 
         # self.text_edit.document().contentsChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(self.document_was_modified)
+        self.text_edit.textChanged.connect(lambda: self.md_text_edit.document().setMarkdown(self.text_edit.document().toPlainText()))
 
         if file_name:
             self.load_file(file_name)
@@ -106,7 +109,11 @@ class MainWindow(QMainWindow):
             md_textedit.print_(printer)
 
     def show_markdown(self):
-        pass
+        self.md_text_edit.move(self.x() + self.size().width(), self.y())
+        self.md_text_edit.resize(self.size())
+        self.md_text_edit.show()
+        self.md_text_edit.raise_()
+        self.md_text_edit.activateWindow()
 
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
@@ -198,6 +205,8 @@ class MainWindow(QMainWindow):
                                     shortcut=QKeySequence.ZoomOut)
 
         self.show_markdown_act = QAction("Show Markdown", self, triggered=self.show_markdown)
+        self.show_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_M),
+                                             QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)])
 
         # Dictionary
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,

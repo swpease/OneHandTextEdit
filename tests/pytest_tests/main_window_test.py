@@ -166,3 +166,19 @@ class TestPrintMarkdown(object):
         # hit Return manually
         assert QTextEdit.print_.call_count == 1
 
+
+class TestShowMarkdown(object):
+    def test_hookup(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.show_markdown = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        qtbot.keyClick(main_win.text_edit, Qt.Key_C, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert main_win.show_markdown.call_count == 2
+
+    def test_connection(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_P)
+        assert main_win.md_text_edit.toPlainText() == "p"
+
