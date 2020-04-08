@@ -105,6 +105,8 @@ class MainWindow(QMainWindow):
         if print_dialog.exec_() == QDialog.Accepted:
             md_textedit.print_(printer)
 
+    def show_markdown(self):
+        pass
 
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
@@ -195,6 +197,8 @@ class MainWindow(QMainWindow):
                                     triggered=self.text_edit.zoomOut,
                                     shortcut=QKeySequence.ZoomOut)
 
+        self.show_markdown_act = QAction("Show Markdown", self, triggered=self.show_markdown)
+
         # Dictionary
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
                                     statusTip="Add a word to the dictionary",
@@ -240,6 +244,8 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.select_all_act)
 
         self.view_menu = self.menuBar().addMenu("&View")
+        self.view_menu.addAction(self.show_markdown_act)
+        self.view_menu.addSeparator()
         self.view_menu.addAction(self.zoom_in_act)
         self.view_menu.addAction(self.zoom_out_act)
 
