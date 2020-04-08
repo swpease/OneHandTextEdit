@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from PySide2.QtWidgets import QToolButton, QMessageBox
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit
 from PySide2.QtCore import Qt
 
 from OHTE.regex_map import create_regex_map
@@ -147,4 +147,22 @@ class TestPrint(object):
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=Qt.ControlModifier)
         # hit Return manually
         assert main_win.text_edit.print_.call_count == 1
+
+
+class TestPrintMarkdown(object):
+    def test_hookup(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.print_markdown = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert main_win.print_markdown.call_count == 2
+
+    def test_print_called(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        QTextEdit.print_ = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        # hit Return manually
+        assert QTextEdit.print_.call_count == 1
 

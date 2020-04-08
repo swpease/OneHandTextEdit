@@ -3,7 +3,7 @@ from typing import Callable
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
-from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog
+from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
@@ -96,6 +96,15 @@ class MainWindow(QMainWindow):
         if print_dialog.exec_() == QDialog.Accepted:
             self.text_edit.print_(printer)
 
+    def print_markdown(self):
+        printer = QPrinter()
+        print_dialog = QPrintDialog(printer, self)
+        print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
+        md_textedit = QTextEdit()
+        md_textedit.document().setMarkdown(self.text_edit.document().toPlainText())
+        if print_dialog.exec_() == QDialog.Accepted:
+            md_textedit.print_(printer)
+
 
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
@@ -123,6 +132,10 @@ class MainWindow(QMainWindow):
                                  statusTip="Print the document",
                                  triggered=self.print_)
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
+
+        self.print_markdown_act = QAction("Print &Markdown", self, triggered=self.print_markdown)
+        self.print_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_P),
+                                              QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_R)])
 
         self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
@@ -215,6 +228,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.exit_act)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.print_act)
+        self.file_menu.addAction(self.print_markdown_act)
 
         self.edit_menu = self.menuBar().addMenu("&Edit")
         self.edit_menu.addAction(self.undo_act)
