@@ -103,10 +103,8 @@ class MainWindow(QMainWindow):
         printer = QPrinter()
         print_dialog = QPrintDialog(printer, self)
         print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
-        md_textedit = QTextEdit()
-        md_textedit.document().setMarkdown(self.text_edit.document().toPlainText())
         if print_dialog.exec_() == QDialog.Accepted:
-            md_textedit.print_(printer)
+            self.md_text_edit.print_(printer)
 
     def show_markdown(self):
         self.md_text_edit.move(self.x() + self.size().width(), self.y())
