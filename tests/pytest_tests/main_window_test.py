@@ -130,3 +130,12 @@ class TestModeSwitch(object):
         qtbot.keyClick(main_win.text_edit, Qt.Key_E, Qt.ControlModifier)  # insert mode
         assert [] == main_win.text_edit.extraSelections()
 
+
+class TestPrint(object):
+    def test_hookup(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.print_document = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=Qt.ControlModifier)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=Qt.ControlModifier)
+        assert main_win.print_document.call_count == 2

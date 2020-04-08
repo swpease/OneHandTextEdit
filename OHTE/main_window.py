@@ -89,6 +89,9 @@ class MainWindow(QMainWindow):
     def about(self):
         QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
 
+    def print_document(self):
+        pass
+
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
         # File
@@ -110,6 +113,11 @@ class MainWindow(QMainWindow):
                                    statusTip="Save the document under a new name",
                                    triggered=self.save_as)
         self.save_as_act.setShortcuts([QKeySequence.SaveAs, QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_L)])
+
+        self.print_act = QAction(QIcon(':/images/print.png'), "&Print", self,
+                                 statusTip="Print the document",
+                                 triggered=self.print_document)
+        self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
 
         self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
@@ -200,6 +208,8 @@ class MainWindow(QMainWindow):
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.close_act)
         self.file_menu.addAction(self.exit_act)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(self.print_act)
 
         self.edit_menu = self.menuBar().addMenu("&Edit")
         self.edit_menu.addAction(self.undo_act)
@@ -234,6 +244,7 @@ class MainWindow(QMainWindow):
         self.file_tool_bar.addAction(self.new_act)
         self.file_tool_bar.addAction(self.open_act)
         self.file_tool_bar.addAction(self.save_act)
+        self.file_tool_bar.addAction(self.print_act)
 
         self.edit_tool_bar = self.addToolBar("Edit")
         self.edit_tool_bar.addAction(self.cut_act)
