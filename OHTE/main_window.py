@@ -3,7 +3,8 @@ from typing import Callable
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
-from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox
+from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog
+from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
 from OHTE.validating_dialog import ValidatingDialog
@@ -89,8 +90,12 @@ class MainWindow(QMainWindow):
     def about(self):
         QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
 
-    def print_document(self):
-        pass
+    def print_(self):
+        printer = QPrinter()
+        print_dialog = QPrintDialog(printer, self)
+        if print_dialog.exec_() == QDialog.Accepted:
+            self.text_edit.print_(printer)
+
 
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
@@ -116,7 +121,7 @@ class MainWindow(QMainWindow):
 
         self.print_act = QAction(QIcon(':/images/print.png'), "&Print", self,
                                  statusTip="Print the document",
-                                 triggered=self.print_document)
+                                 triggered=self.print_)
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
 
         self.close_act = QAction("&Close", self,

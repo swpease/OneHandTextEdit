@@ -135,7 +135,16 @@ class TestPrint(object):
     def test_hookup(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.print_document = MagicMock()
+        main_win.print_ = MagicMock()
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=Qt.ControlModifier)
         qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=Qt.ControlModifier)
-        assert main_win.print_document.call_count == 2
+        assert main_win.print_.call_count == 2
+
+    def test_print_called(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.text_edit.print_ = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=Qt.ControlModifier)
+        # hit Return manually
+        assert main_win.text_edit.print_.call_count == 1
+
