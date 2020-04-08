@@ -243,8 +243,6 @@ class MainWindow(QMainWindow):
         self.view_menu.addAction(self.zoom_in_act)
         self.view_menu.addAction(self.zoom_out_act)
 
-        self.window_menu = self.menuBar().addMenu("&Window")
-
         self.dict_menu = self.menuBar().addMenu('&Dictionary')
         self.dict_menu.addAction(self.add_word_act)
         self.dict_menu.addAction(self.delete_word_act)
