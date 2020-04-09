@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         other.show()
 
     def open(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, filter="Text files (*.txt)")
+        file_name, _ = QFileDialog.getOpenFileName(self, filter="Text files (*.txt *.md)")
         if file_name:
             existing = self.find_main_window(file_name)
             if existing is not None:
