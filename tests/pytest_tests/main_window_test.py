@@ -182,3 +182,20 @@ class TestShowMarkdown(object):
         qtbot.keyClick(main_win.text_edit, Qt.Key_P)
         assert main_win.md_text_edit.toPlainText() == "p"
 
+
+class TestPrintPreview(object):
+    def test_basic(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.text_edit.print_ = MagicMock()
+        main_win.print_preview_act.trigger()
+        assert main_win.text_edit.print_.call_count == 1
+
+
+class TestPrintMarkdownPreview(object):
+    def test_basic(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.md_text_edit.print_ = MagicMock()
+        main_win.print_preview_markdown_act.trigger()
+        assert main_win.md_text_edit.print_.call_count == 1

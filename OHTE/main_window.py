@@ -106,6 +106,18 @@ class MainWindow(QMainWindow):
         if print_dialog.exec_() == QDialog.Accepted:
             self.md_text_edit.print_(printer)
 
+    def print_preview_markdown(self):
+        printer = QPrinter()
+        ppd = QPrintPreviewDialog(printer)
+        ppd.paintRequested.connect(lambda: self.md_text_edit.print_(printer))
+        ppd.exec_()
+
+    def print_preview(self):
+        printer = QPrinter()
+        ppd = QPrintPreviewDialog(printer)
+        ppd.paintRequested.connect(lambda: self.text_edit.print_(printer))
+        ppd.exec_()
+
     def show_markdown(self):
         self.md_text_edit.move(self.x() + self.size().width(), self.y())
         self.md_text_edit.resize(self.size())
@@ -143,6 +155,10 @@ class MainWindow(QMainWindow):
         self.print_markdown_act = QAction("Print &Markdown", self, triggered=self.print_markdown)
         self.print_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_P),
                                               QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_R)])
+
+        self.print_preview_act = QAction("Print Preview", self, triggered=self.print_preview)
+
+        self.print_preview_markdown_act = QAction("Print Preview (Markdown)", self, triggered=self.print_preview_markdown)
 
         self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
@@ -240,6 +256,8 @@ class MainWindow(QMainWindow):
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.print_act)
         self.file_menu.addAction(self.print_markdown_act)
+        self.file_menu.addAction(self.print_preview_act)
+        self.file_menu.addAction(self.print_preview_markdown_act)
 
         self.edit_menu = self.menuBar().addMenu("&Edit")
         self.edit_menu.addAction(self.undo_act)
