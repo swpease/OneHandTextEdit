@@ -3,7 +3,8 @@ from typing import Callable
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
-from PySide2.QtWidgets import QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit
+from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
+                               QDockWidget)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
@@ -35,6 +36,7 @@ class MainWindow(QMainWindow):
         self.create_menus()
         self.create_tool_bars()
         self.create_status_bar()
+        self.create_dock_widget()
 
         self.read_settings()
 
@@ -302,6 +304,17 @@ class MainWindow(QMainWindow):
         self.dict_tool_bar = self.addToolBar('Dictionary')
         self.dict_tool_bar.addAction(self.add_word_act)
         self.dict_tool_bar.addAction(self.delete_word_act)
+
+    def create_dock_widget(self):
+        """
+        Sets up a dock widget for Markdown hot previewing, hidden by default.
+        :return: None
+        """
+        dock = QDockWidget("Markdown Viewer", self)
+        dock.setWidget(self.md_text_edit)
+        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.view_menu.addAction(dock.toggleViewAction())
+        dock.close()
 
     def create_status_bar(self):
         self.statusBar().showMessage("Ready")

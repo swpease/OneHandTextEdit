@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget
 from PySide2.QtCore import Qt
 
 from OHTE.regex_map import create_regex_map
@@ -34,6 +34,15 @@ def main_win():
 
     os.remove(src)
     os.remove(dest)
+
+
+class TestDockingSetup(object):
+    def test_hidden(self, main_win, qtbot):
+        """Implicitly tests that it's hooked up to MainWindow"""
+        main_win.show()
+        qtbot.addWidget(main_win)
+        dock = main_win.findChild(QDockWidget)
+        assert not dock.isVisible()
 
 
 class TestAddWord(object):
