@@ -44,6 +44,15 @@ class TestDockingSetup(object):
         dock = main_win.findChild(QDockWidget)
         assert not dock.isVisible()
 
+    def test_shortcuts(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        dock = main_win.findChild(QDockWidget)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert dock.isVisible()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_C, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert not dock.isVisible()
+
 
 class TestAddWord(object):
     def test_add_word(self, main_win, qtbot):
@@ -174,22 +183,6 @@ class TestPrintMarkdown(object):
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         # hit Return manually
         assert QTextEdit.print_.call_count == 1
-
-
-class TestShowMarkdown(object):
-    def test_hookup(self, main_win, qtbot):
-        main_win.show()
-        qtbot.addWidget(main_win)
-        main_win.show_markdown = MagicMock()
-        qtbot.keyClick(main_win.text_edit, Qt.Key_M, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
-        qtbot.keyClick(main_win.text_edit, Qt.Key_C, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
-        assert main_win.show_markdown.call_count == 2
-
-    def test_connection(self, main_win, qtbot):
-        main_win.show()
-        qtbot.addWidget(main_win)
-        qtbot.keyClick(main_win.text_edit, Qt.Key_P)
-        assert main_win.md_text_edit.toPlainText() == "p"
 
 
 class TestPrintPreview(object):

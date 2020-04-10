@@ -120,13 +120,6 @@ class MainWindow(QMainWindow):
         ppd.paintRequested.connect(lambda: self.text_edit.print_(printer))
         ppd.exec_()
 
-    def show_markdown(self):
-        self.md_text_edit.move(self.x() + self.size().width(), self.y())
-        self.md_text_edit.resize(self.size())
-        self.md_text_edit.show()
-        self.md_text_edit.raise_()
-        self.md_text_edit.activateWindow()
-
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
         # File
@@ -220,10 +213,6 @@ class MainWindow(QMainWindow):
                                     triggered=self.text_edit.zoomOut,
                                     shortcut=QKeySequence.ZoomOut)
 
-        self.show_markdown_act = QAction("Show Markdown", self, triggered=self.show_markdown)
-        self.show_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_M),
-                                             QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)])
-
         # Dictionary
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
                                     statusTip="Add a word to the dictionary",
@@ -271,8 +260,6 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.select_all_act)
 
         self.view_menu = self.menuBar().addMenu("&View")
-        self.view_menu.addAction(self.show_markdown_act)
-        self.view_menu.addSeparator()
         self.view_menu.addAction(self.zoom_in_act)
         self.view_menu.addAction(self.zoom_out_act)
 
@@ -313,7 +300,11 @@ class MainWindow(QMainWindow):
         dock = QDockWidget("Markdown Viewer", self)
         dock.setWidget(self.md_text_edit)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.view_menu.addAction(dock.toggleViewAction())
+        dock_act = dock.toggleViewAction()
+        dock_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_M),
+                               QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)])
+        self.view_menu.addSeparator()  # Does nothing on Mac
+        self.view_menu.addAction(dock_act)
         dock.close()
 
     def create_status_bar(self):
