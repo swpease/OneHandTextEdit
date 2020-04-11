@@ -334,6 +334,8 @@ class MainWindow(QMainWindow):
         settings = QSettings('PMA', 'OneHandTextEdit')
         pos = settings.value('pos', QPoint(200, 200))
         size = settings.value('size', QSize(400, 400))
+        md_font = settings.value('md_font', self.md_text_edit.document().defaultFont())
+        self.md_text_edit.document().setDefaultFont(md_font)
         self.move(pos)
         self.resize(size)
 
@@ -341,6 +343,7 @@ class MainWindow(QMainWindow):
         settings = QSettings('PMA', 'OneHandTextEdit')
         settings.setValue('pos', self.pos())
         settings.setValue('size', self.size())
+        settings.setValue('md_font', self.md_text_edit.document().defaultFont())
 
     def maybe_save(self):
         if self.text_edit.document().isModified():
