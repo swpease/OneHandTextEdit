@@ -1,7 +1,7 @@
 import json
-from typing import Callable
+from typing import Callable, Union
 
-from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
+from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp, QSizeF
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
                                QDockWidget, QFontDialog)
@@ -101,17 +101,25 @@ class MainWindow(QMainWindow):
         if print_dialog.exec_() == QDialog.Accepted:
             self.text_edit.print_(printer)
 
+    def generic_print_no_page_nums(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
+        """Prints without page numbers."""
+        # https://stackoverflow.com/questions/9430133/page-number-in-qtextdocument-for-envelopes
+        # TODO: make toggle option?
+        paper_size = QSizeF(printer.width(), printer.height())
+        text_edit.document().setPageSize(paper_size)
+        text_edit.print_(printer)
+
     def print_markdown(self):
         printer = QPrinter()
         print_dialog = QPrintDialog(printer, self)
         print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
         if print_dialog.exec_() == QDialog.Accepted:
-            self.md_text_edit.print_(printer)
+            self.generic_print_no_page_nums(printer, self.md_text_edit)
 
     def print_preview_markdown(self):
         printer = QPrinter()
         ppd = QPrintPreviewDialog(printer)
-        ppd.paintRequested.connect(lambda: self.md_text_edit.print_(printer))
+        ppd.paintRequested.connect(lambda: self.generic_print_no_page_nums(printer, self.md_text_edit))
         ppd.exec_()
 
     def print_preview(self):
