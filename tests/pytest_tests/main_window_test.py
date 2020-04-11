@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog
 from PySide2.QtCore import Qt
 
 from OHTE.regex_map import create_regex_map
@@ -34,6 +34,15 @@ def main_win():
 
     os.remove(src)
     os.remove(dest)
+
+
+class TestMarkdownFont(object):
+    def test_basic(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.md_text_edit.setFont = MagicMock()
+        main_win.md_font_act.trigger()
+        assert main_win.md_text_edit.setFont.call_count == 1
 
 
 class TestDockingSetup(object):

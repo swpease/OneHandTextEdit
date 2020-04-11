@@ -4,7 +4,7 @@ from typing import Callable
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
-                               QDockWidget)
+                               QDockWidget, QFontDialog)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
@@ -120,6 +120,11 @@ class MainWindow(QMainWindow):
         ppd.paintRequested.connect(lambda: self.text_edit.print_(printer))
         ppd.exec_()
 
+    # Format
+    def set_markdown_font(self):
+        (ok, font) = QFontDialog.getFont(self.md_text_edit.font(), self, "Markdown Font")
+        self.md_text_edit.setFont(font)
+
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
         # File
@@ -213,6 +218,9 @@ class MainWindow(QMainWindow):
                                     triggered=self.text_edit.zoomOut,
                                     shortcut=QKeySequence.ZoomOut)
 
+        # Format
+        self.md_font_act = QAction("Markdown Font", self, triggered=self.set_markdown_font)
+
         # Dictionary
         self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
                                     statusTip="Add a word to the dictionary",
@@ -258,6 +266,10 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
         self.edit_menu.addAction(self.select_all_act)
+
+        self.format_menu = self.menuBar().addMenu("For&mat")
+        self.font_submenu = self.format_menu.addMenu("&Font")
+        self.font_submenu.addAction(self.md_font_act)
 
         self.view_menu = self.menuBar().addMenu("&View")
         self.view_menu.addAction(self.zoom_in_act)
