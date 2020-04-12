@@ -52,11 +52,6 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.maybe_save():
             self.write_settings()
-            # TODO: move to slot.
-            if MainWindow.dict_modified:
-                with open(self.dict_src, 'w') as f:
-                    json.dump(self.regex_map, f)
-                MainWindow.dict_modified = False
             event.accept()
         else:
             event.ignore()
