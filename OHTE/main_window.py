@@ -151,18 +151,18 @@ class MainWindow(QMainWindow):
                                    triggered=self.save_as)
         self.save_as_act.setShortcuts([QKeySequence.SaveAs, QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_L)])
 
-        self.print_act = QAction(QIcon(':/images/print.png'), "&Print", self,
+        self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
                                  statusTip="Print the document",
                                  triggered=self.print_)
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
 
-        self.print_markdown_act = QAction("Print &Markdown", self, triggered=self.print_markdown)
+        self.print_markdown_act = QAction("Print &Markdown...", self, triggered=self.print_markdown)
         self.print_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_P),
                                               QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_R)])
 
-        self.print_preview_act = QAction("Print Preview", self, triggered=self.print_preview)
+        self.print_preview_act = QAction("Print Preview...", self, triggered=self.print_preview)
 
-        self.print_preview_markdown_act = QAction("Print Preview (Markdown)", self, triggered=self.print_preview_markdown)
+        self.print_preview_markdown_act = QAction("Print Markdown Preview...", self, triggered=self.print_preview_markdown)
 
         self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
@@ -223,15 +223,15 @@ class MainWindow(QMainWindow):
                                     shortcut=QKeySequence.ZoomOut)
 
         # Format
-        self.md_font_act = QAction("Markdown Font", self, triggered=self.set_markdown_font)
+        self.md_font_act = QAction("Markdown Font...", self, triggered=self.set_markdown_font)
 
         # Dictionary
-        self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word", self,
+        self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word...", self,
                                     statusTip="Add a word to the dictionary",
                                     triggered=self.show_add_word_dialog)
         self.add_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_J), QKeySequence(Qt.CTRL + Qt.Key_G)])
 
-        self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word", self,
+        self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word...", self,
                                        statusTip="Delete a word from the dictionary",
                                        triggered=self.show_del_word_dialog)
         self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
