@@ -119,7 +119,33 @@ def set_entry_default(word: str, regex_map: Dict[str, Entry]) -> bool:
     :param regex_map: Dictionary to modify.
     :return: True if regex_map modified, else False.
     """
-    pass
+    if len(word) == 0:
+        return False
+
+    base_word = word
+    regex: str = word_to_lc_regex(base_word)
+    entry: Optional[Entry] = regex_map.get(regex)
+    if entry is None:
+        # check if possessive
+        if base_word.endswith('\'s'):
+            base_word = base_word[:-2]
+            regex: str = word_to_lc_regex(base_word)
+            entry: Optional[Entry] = regex_map.get(regex)
+        if entry is None:
+            return False
+
+    uncapitalized_word = base_word[0].lower() if len(base_word) == 1 else base_word[0].lower() + base_word[1:]
+    if base_word in entry['words']:
+        entry['default'] = base_word
+    # for auto-caps cases
+    elif uncapitalized_word in entry['words']:
+        entry['default'] = uncapitalized_word
+    # user forced something in
+    else:
+        entry['default'] = base_word
+        entry['words'].append(base_word)
+
+    return True
 
 
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:

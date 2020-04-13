@@ -3,7 +3,7 @@ import os
 import json
 
 from OHTE.regex_map import (word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word,
-                            add_word_to_dict, del_word_from_dict)
+                            add_word_to_dict, del_word_from_dict, set_entry_default)
 
 
 class TestRegexMaker(unittest.TestCase):
@@ -203,6 +203,60 @@ class TestDelWord(unittest.TestCase):
     def test_remove_only(self):
         res = del_word_from_dict('cat', self.regex_map)
         self.assertEqual(str(self.regex_map), "{}")
+        self.assertTrue(res)
+
+
+class TestSetDefault(unittest.TestCase):
+    def setUp(self) -> None:
+        self.src = 'test_words.txt'
+        self.dest = 'test_out.json'
+        words = ["may", "cat"]
+        with open(self.src, 'w') as f:
+            for word in words:
+                f.write("%s\n" % word)
+        create_regex_map([self.src], [True], self.dest)
+        with open(self.dest) as f:
+            self.regex_map = json.load(f)
+
+    def tearDown(self) -> None:
+        os.remove(self.src)
+        os.remove(self.dest)
+
+    def test_empty_entry(self):
+        res = set_entry_default('', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertFalse(res)
+
+    def test_missing_entry(self):
+        res = set_entry_default('x', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertFalse(res)
+
+    def test_basic(self):
+        res = set_entry_default('cat', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertTrue(res)
+
+    def test_capitalized(self):
+        res = set_entry_default('Cat', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertTrue(res)
+
+    def test_possessive(self):
+        res = set_entry_default('cat\'s', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertTrue(res)
+
+    def test_unexpected(self):
+        res = set_entry_default('CAT', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'CAT', 'words': ['may', 'cat', 'CAT']}}")
+        self.assertTrue(res)
+
+    def test_possessive_single_letter(self):
+        # Not ideal but it looks better than adding the `a` stuff to all the string comparisons. Easy fix if needed.
+        add_word_to_dict('a', self.regex_map)
+        res = set_entry_default('a\'s', self.regex_map)
+        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}, '^[a;]$': {'default': 'a', 'words': ['a']}}")
         self.assertTrue(res)
 
 
