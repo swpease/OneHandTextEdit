@@ -319,7 +319,7 @@ class MainWindow(QMainWindow):
         """
         dock = QDockWidget("Markdown Viewer", self)
         dock.setWidget(self.md_text_edit)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(Qt.BottomDockWidgetArea, dock)
         dock_act = dock.toggleViewAction()
         dock_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_M),
                                QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)])
