@@ -4,7 +4,7 @@ from typing import Callable, Union
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp, QSizeF
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
-                               QDockWidget, QFontDialog)
+                               QDockWidget, QFontDialog, QLabel)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
@@ -28,6 +28,8 @@ class MainWindow(QMainWindow):
         self.dict_src = dict_src
         self.regex_map = regex_map
         self.text_edit = MyPlainTextEdit(regex_map)
+        self.mode_label = QLabel('Insert Mode')
+        self.mode_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)  # Prevents minor shift on toggling.
         self.md_text_edit = QTextEdit()
         self.md_text_edit.setReadOnly(True)
         self.setCentralWidget(self.text_edit)
@@ -44,6 +46,7 @@ class MainWindow(QMainWindow):
         self.text_edit.textChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(lambda: self.md_text_edit.document().setMarkdown(self.text_edit.document().toPlainText()))
         self.text_edit.entry_default_set.connect(self.handle_entry_default_set)
+        self.text_edit.mode_toggled.connect(self.mode_label.setText)
 
         if file_name:
             self.load_file(file_name)
@@ -325,6 +328,7 @@ class MainWindow(QMainWindow):
 
     def create_status_bar(self):
         self.statusBar().showMessage("Ready")
+        self.statusBar().addPermanentWidget(self.mode_label)
 
     def read_settings(self):
         settings = QSettings('PMA', 'OneHandTextEdit')

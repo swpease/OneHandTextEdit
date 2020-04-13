@@ -19,6 +19,7 @@ class Mode(Enum):
 class MyPlainTextEdit(QPlainTextEdit):
 
     entry_default_set = Signal()
+    mode_toggled = Signal(str)
 
     def __init__(self, regex_map: Dict[str, Entry]):
         super().__init__()  # Pass parent?
@@ -260,6 +261,8 @@ class MyPlainTextEdit(QPlainTextEdit):
             self.setExtraSelections([])
         else:
             self.setup_wordcheck_for_word_under_cursor()
+
+        self.mode_toggled.emit(self.mode.name.capitalize() + ' Mode')
 
     def keyPressEvent(self, e: QKeyEvent):
         if self.mode == Mode.INSERT:

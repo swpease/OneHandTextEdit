@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import MagicMock, patch
 
-from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog, QLabel
 from PySide2.QtCore import Qt
 
 from OHTE.regex_map import create_regex_map
@@ -158,7 +158,7 @@ class TestDelWord(object):
 
 
 class TestModeSwitch(object):
-    def test_basic(self, main_win, qtbot):
+    def test_textedit_hookup(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
         assert main_win.text_edit.mode == Mode.INSERT
@@ -166,6 +166,15 @@ class TestModeSwitch(object):
         assert main_win.text_edit.mode == Mode.WORDCHECK
         qtbot.keyClick(main_win.text_edit, Qt.Key_I, modifier=Qt.ControlModifier)
         assert main_win.text_edit.mode == Mode.INSERT
+
+    def test_statusbar(self, main_win, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        assert main_win.statusBar().findChild(QLabel).text() == Mode.INSERT.name.capitalize() + " Mode"
+        qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+        assert main_win.statusBar().findChild(QLabel).text() == Mode.WORDCHECK.name.capitalize() + " Mode"
+        qtbot.keyClick(main_win.text_edit, Qt.Key_I, modifier=Qt.ControlModifier)
+        assert main_win.statusBar().findChild(QLabel).text() == Mode.INSERT.name.capitalize() + " Mode"
 
     def test_wc_enabled(self, main_win, qtbot):
         main_win.show()
