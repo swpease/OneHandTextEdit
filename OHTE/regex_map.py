@@ -111,6 +111,17 @@ def _handle_entry_caps(entry: Entry) -> Entry:
     return entry
 
 
+def set_entry_default(word: str, regex_map: Dict[str, Entry]) -> bool:
+    """
+    Sets word as default for its Entry, if it exists. Mutates the regex_map.
+
+    :param word: Presumed to derive from `PlainTextEdit.get_word_under_cursor()`
+    :param regex_map: Dictionary to modify.
+    :return: True if regex_map modified, else False.
+    """
+    pass
+
+
 def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
     """
     Tries to map a word to an Entry.

@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         # self.text_edit.document().contentsChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(lambda: self.md_text_edit.document().setMarkdown(self.text_edit.document().toPlainText()))
+        self.text_edit.entry_default_set.connect(self.handle_entry_default_set)
 
         if file_name:
             self.load_file(file_name)
@@ -475,6 +476,9 @@ class MainWindow(QMainWindow):
             MainWindow.dict_modified = True
         else:
             QMessageBox.information(self, "One Hand Text Edit", "Word not found in dictionary")
+
+    def handle_entry_default_set(self):
+        MainWindow.dict_modified = True
 
 
 if __name__ == '__main__':

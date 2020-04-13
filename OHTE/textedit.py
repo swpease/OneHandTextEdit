@@ -4,11 +4,11 @@ import re
 from enum import Enum
 from typing import Optional, Dict
 
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
 from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from OHTE.regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, Entry
+from OHTE.regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, set_entry_default, Entry
 
 
 class Mode(Enum):
@@ -17,6 +17,9 @@ class Mode(Enum):
 
 
 class MyPlainTextEdit(QPlainTextEdit):
+
+    entry_default_set = Signal()
+
     def __init__(self, regex_map: Dict[str, Entry]):
         super().__init__()  # Pass parent?
 
@@ -35,6 +38,14 @@ class MyPlainTextEdit(QPlainTextEdit):
         self.wordcheck_cursor.setPosition(self.wordcheck_cursor.position() - len(next_word))
         self.wordcheck_cursor.setPosition((self.wordcheck_cursor.position() + len(next_word)), mode=QTextCursor.KeepAnchor)
         self.highlight_word(self.wordcheck_cursor, self.wordcheck_entry)
+
+    def set_wordcheck_word_as_default(self):
+        """Set the word selected by the wordcheck cursor as the default for its Entry, and emit signal indicating so."""
+        word = self.wordcheck_cursor.selectedText()
+        changed: bool = set_entry_default(word, self.regex_map)
+        if changed:
+            self.setup_wordcheck_for_word_under_cursor()
+            self.entry_default_set.emit()
 
     def correct_index(self):
         """Pickup where you left off so the list cycling is sane."""
@@ -210,6 +221,9 @@ class MyPlainTextEdit(QPlainTextEdit):
                 if self.wordcheck_entry is not None:
                     self.entry_idx -= 1
                     self.next_word_replace()
+
+            elif e.key() in [Qt.Key_W, Qt.Key_O] and e.type() == QKeyEvent.KeyPress:
+                self.set_wordcheck_word_as_default()
 
             elif e.key() in [Qt.Key_A, Qt.Key_Z, Qt.Key_X]:
                 if e.key() == Qt.Key_A:

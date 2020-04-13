@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog
 from PySide2.QtCore import Qt
@@ -36,6 +36,39 @@ def main_win():
 
     os.remove(src)
     os.remove(dest)
+
+
+class TestEntryDefaultSet(object):
+    """Checks that everything is hooked up right from MainWindow down to the regex_map fn call."""
+    def test_true(self, main_win, qtbot):
+        with patch('OHTE.textedit.set_entry_default', return_value=True) as mock:
+            main_win.show()
+            qtbot.addWidget(main_win)
+            # main_win.text_edit.set_wordcheck_word_as_default = MagicMock()
+            qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+            assert main_win.text_edit.mode == Mode.WORDCHECK
+            qtbot.keyClick(main_win.text_edit, Qt.Key_O)
+            assert MainWindow.dict_modified
+
+    # checking other hotkey
+    def test_true_b(self, main_win, qtbot):
+        with patch('OHTE.textedit.set_entry_default', return_value=True) as mock:
+            main_win.show()
+            qtbot.addWidget(main_win)
+            # main_win.text_edit.set_wordcheck_word_as_default = MagicMock()
+            qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+            assert main_win.text_edit.mode == Mode.WORDCHECK
+            qtbot.keyClick(main_win.text_edit, Qt.Key_W)
+            assert MainWindow.dict_modified
+
+    def test_false(self, main_win, qtbot):
+        with patch('OHTE.textedit.set_entry_default', return_value=False) as mock:
+            main_win.show()
+            qtbot.addWidget(main_win)
+            qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)
+            assert main_win.text_edit.mode == Mode.WORDCHECK
+            qtbot.keyClick(main_win.text_edit, Qt.Key_O)
+            assert not MainWindow.dict_modified
 
 
 class TestMarkdownFont(object):
