@@ -4,7 +4,7 @@ import os
 import os.path
 from unittest.mock import MagicMock, patch
 
-from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog, QLabel, QApplication
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QLabel, QApplication
 from PySide2.QtCore import Qt, QSettings
 
 from OHTE.regex_map import create_regex_map
@@ -73,6 +73,11 @@ def mainwin_recentfiles():
 
 
 class TestRecentFiles(object):
+    def test_inactive_clear_recent(self, mainwin_recentfiles: MainWindow, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        assert not mainwin_recentfiles.clear_recent_files_act.isEnabled()
+
     def test_no_files(self, mainwin_recentfiles, qtbot):
         mainwin_recentfiles.show()
         qtbot.addWidget(mainwin_recentfiles)
@@ -90,6 +95,7 @@ class TestRecentFiles(object):
         assert act1.text() == 'document1.txt'
         act2 = mainwin_recentfiles.recent_file_acts[1]
         assert not act2.isVisible()
+        assert mainwin_recentfiles.clear_recent_files_act.isEnabled()
 
     def test_save_three_files(self, mainwin_recentfiles, qtbot):
         mainwin_recentfiles.show()
@@ -137,6 +143,16 @@ class TestRecentFiles(object):
         assert not win3.isVisible()
         mainwin_recentfiles.recent_file_acts[1].trigger()  # ref: prior test
         MainWindow.open_file.assert_called_once_with(win3.cur_file)
+
+    def test_clear_recent(self, mainwin_recentfiles: MainWindow, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        mainwin_recentfiles.clear_recent_files_act.trigger()
+        for act in mainwin_recentfiles.recent_file_acts:
+            assert not act.isVisible()
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                assert not widget.clear_recent_files_act.isEnabled()
 
 class TestEntryDefaultSet(object):
     """Checks that everything is hooked up right from MainWindow down to the regex_map fn call."""

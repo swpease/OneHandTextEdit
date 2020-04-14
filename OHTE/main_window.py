@@ -174,6 +174,10 @@ class MainWindow(QMainWindow):
         for i in range(MainWindow.max_recent_files):
             self.recent_file_acts.append(QAction(self, visible=False, triggered=self.open_recent))
 
+        self.clear_recent_files_act = QAction("Clear Menu", self,
+                                              enabled=False,
+                                              triggered=self.clear_recent_files)
+
         self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
                                  statusTip="Print the document",
                                  triggered=self.print_)
@@ -278,6 +282,8 @@ class MainWindow(QMainWindow):
         self.recent_file_submenu = self.file_menu.addMenu("Open Recent")
         for act in self.recent_file_acts:
             self.recent_file_submenu.addAction(act)
+        self.recent_file_submenu.addSeparator()
+        self.recent_file_submenu.addAction(self.clear_recent_files_act)
         self.update_recent_file_actions()
 
         self.file_menu.addAction(self.save_act)
@@ -487,9 +493,20 @@ class MainWindow(QMainWindow):
             if isinstance(widget, MainWindow):
                 widget.update_recent_file_actions()
 
+    def clear_recent_files(self):
+        """Clears the recent files setting and updates menus across all main windows."""
+        settings = QSettings('PMA', 'OneHandTextEdit')
+        settings.setValue('recent_files', [])
+
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.update_recent_file_actions()
+
     def update_recent_file_actions(self):
         settings = QSettings('PMA', 'OneHandTextEdit')
         recent_files: List = settings.value('recent_files', [])
+
+        self.clear_recent_files_act.setEnabled(len(recent_files) > 0)
 
         for i, file in enumerate(recent_files):
             self.recent_file_acts[i].setText(QFileInfo(file).fileName())
