@@ -1,10 +1,11 @@
 import pytest
 import json
 import os
+import os.path
 from unittest.mock import MagicMock, patch
 
-from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog, QLabel
-from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QFontDialog, QLabel, QApplication
+from PySide2.QtCore import Qt, QSettings
 
 from OHTE.regex_map import create_regex_map
 from OHTE.main_window import MainWindow
@@ -37,6 +38,105 @@ def main_win():
     os.remove(src)
     os.remove(dest)
 
+
+@pytest.fixture(scope="class")
+def mainwin_recentfiles():
+    MainWindow.dict_modified = False
+    MainWindow.max_recent_files = 2
+
+    # resetting recent files
+    settings = QSettings('PMA', 'OneHandTextEdit')
+    settings.setValue('recent_files', [])
+
+    src = 'test_words.txt'
+    dest = 'test_out.json'
+    words = ["may", "cat"]
+
+    with open(src, 'w') as f:
+        for word in words:
+            f.write("%s\n" % word)
+
+    create_regex_map([src], [True], dest)
+
+    with open(dest) as f:
+        regex_map = json.load(f)
+    yield MainWindow(regex_map, dict_src=dest)
+
+    os.remove(src)
+    os.remove(dest)
+    os.remove('document1.txt')
+    os.remove('document2.txt')
+    os.remove('document3.txt')
+    # resetting recent files
+    settings = QSettings('PMA', 'OneHandTextEdit')
+    settings.setValue('recent_files', [])
+
+
+class TestRecentFiles(object):
+    def test_no_files(self, mainwin_recentfiles, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        for act in mainwin_recentfiles.recent_file_acts:
+            assert not act.isVisible()
+
+    def test_save_one_file(self, mainwin_recentfiles, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        mainwin_recentfiles.text_edit.setPlainText('1')
+        mainwin_recentfiles.save_as() # raises a modal
+        act1 = mainwin_recentfiles.recent_file_acts[0]
+        assert act1.isVisible()
+        assert act1.data() == os.path.realpath('document1.txt')
+        assert act1.text() == 'document1.txt'
+        act2 = mainwin_recentfiles.recent_file_acts[1]
+        assert not act2.isVisible()
+
+    def test_save_three_files(self, mainwin_recentfiles, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        # file 2
+        mainwin_recentfiles.new_file()
+        win2 = MainWindow.window_list[0]
+        win2.text_edit.setPlainText('2')
+        win2.save_as()
+        act1 = mainwin_recentfiles.recent_file_acts[0]  # check that it updates across open files
+        assert act1.isVisible()
+        assert act1.text() == 'document2.txt'
+        act2 = mainwin_recentfiles.recent_file_acts[1]
+        assert act2.isVisible()
+        assert act2.text() == 'document1.txt'
+        # file 3
+        win2.new_file()
+        win3 = MainWindow.window_list[1]
+        win3.text_edit.setPlainText('3')
+        win3.save_as()
+        act1 = mainwin_recentfiles.recent_file_acts[0]
+        assert act1.isVisible()
+        assert act1.text() == 'document3.txt'
+        act2 = mainwin_recentfiles.recent_file_acts[1]
+        assert act2.isVisible()
+        assert act2.text() == 'document2.txt'
+
+    def test_open_nonrecent_file(self, mainwin_recentfiles, qtbot):
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        mainwin_recentfiles.open()  # use test_words.txt
+        act1 = mainwin_recentfiles.recent_file_acts[0]
+        assert act1.isVisible()
+        assert act1.text() == 'test_words.txt'
+        act2 = mainwin_recentfiles.recent_file_acts[1]
+        assert act2.isVisible()
+        assert act2.text() == 'document3.txt'
+
+    def test_open_recent_hookup(self, mainwin_recentfiles: MainWindow, qtbot):
+        MainWindow.open_file = MagicMock()
+        mainwin_recentfiles.show()
+        qtbot.addWidget(mainwin_recentfiles)
+        win3: MainWindow = MainWindow.window_list[1]
+        win3.close()
+        assert not win3.isVisible()
+        mainwin_recentfiles.recent_file_acts[1].trigger()  # ref: prior test
+        MainWindow.open_file.assert_called_once_with(win3.cur_file)
 
 class TestEntryDefaultSet(object):
     """Checks that everything is hooked up right from MainWindow down to the regex_map fn call."""

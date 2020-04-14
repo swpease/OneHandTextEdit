@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Union
+from typing import Callable, Union, List
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp, QSizeF
 from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
     sequence_number = 1
     window_list = []
     dict_modified = False
+    max_recent_files = 5
 
     def __init__(self, regex_map, file_name='', dict_src='regex_map.json'):
         super().__init__()
@@ -69,27 +70,42 @@ class MainWindow(QMainWindow):
         other.move(self.x() + 40, self.y() + 40)
         other.show()
 
+    def open_file(self, file_name: str):
+        """
+        Handles opening a file: checking if already open, if we need a new MainWindow, or can safely overwrite.
+        :param file_name: A canonical (or absolute?) file path.
+        :return:
+        """
+        existing = self.find_main_window(file_name)
+        if existing is not None:
+            existing.show()
+            existing.raise_()
+            existing.activateWindow()
+            return
+
+        if self.is_untitled and self.text_edit.document().isEmpty() and not self.isWindowModified():
+            self.load_file(file_name)
+        else:
+            other = MainWindow(self.regex_map, file_name)
+            if other.is_untitled:  # impossible?
+                del other
+                return
+
+            MainWindow.window_list.append(other)
+            other.move(self.x() + 40, self.y() + 40)
+            other.show()
+
+    def open_recent(self):
+        """Only use as slot for QAction with data() set to a canonical (or absolute?) file name."""
+        # ref: https://stackoverflow.com/questions/21974449/extract-menu-action-data-in-receiving-function-or-slot
+        action = self.sender()
+        if action:
+            self.open_file(action.data())
+
     def open(self):
         file_name, _ = QFileDialog.getOpenFileName(self, filter="Text files (*.txt *.md)")
         if file_name:
-            existing = self.find_main_window(file_name)
-            if existing is not None:
-                existing.show()
-                existing.raise_()
-                existing.activateWindow()
-                return
-
-            if self.is_untitled and self.text_edit.document().isEmpty() and not self.isWindowModified():
-                self.load_file(file_name)
-            else:
-                other = MainWindow(self.regex_map, file_name)
-                if other.is_untitled:  # impossible?
-                    del other
-                    return
-
-                MainWindow.window_list.append(other)
-                other.move(self.x() + 40, self.y() + 40)
-                other.show()
+            self.open_file(file_name)
 
     def about(self):
         QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
@@ -153,6 +169,10 @@ class MainWindow(QMainWindow):
                                    statusTip="Save the document under a new name",
                                    triggered=self.save_as)
         self.save_as_act.setShortcuts([QKeySequence.SaveAs, QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_L)])
+
+        self.recent_file_acts = []
+        for i in range(MainWindow.max_recent_files):
+            self.recent_file_acts.append(QAction(self, visible=False, triggered=self.open_recent))
 
         self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
                                  statusTip="Print the document",
@@ -256,15 +276,23 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.open_act)
         self.file_menu.addAction(self.save_act)
         self.file_menu.addAction(self.save_as_act)
+
+        self.recent_file_submenu = self.file_menu.addMenu("Open Recent")
+        for act in self.recent_file_acts:
+            self.recent_file_submenu.addAction(act)
+        self.update_recent_file_actions()
+
         self.file_menu.addSeparator()
         self.print_submenu = self.file_menu.addMenu("&Print")
         self.print_submenu.addAction(self.print_act)
         self.print_submenu.addAction(self.print_markdown_act)
         self.print_submenu.addAction(self.print_preview_act)
         self.print_submenu.addAction(self.print_preview_markdown_act)
+
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.close_act)
         self.file_menu.addAction(self.exit_act)
+        # End file menu
 
         self.edit_menu = self.menuBar().addMenu("&Edit")
         self.edit_menu.addAction(self.undo_act)
@@ -376,7 +404,7 @@ class MainWindow(QMainWindow):
     def save_file(self, file_name):
         """
 
-        :param file_name: A canonical file path.
+        :param file_name: A canonical file path or whatever QFileDialog.getSaveFileName returns.
         :return: boolean for use in closeEvent method.
         """
         error = None
@@ -401,6 +429,12 @@ class MainWindow(QMainWindow):
         return True
 
     def load_file(self, file_name):
+        """
+        Load file into current instance.
+
+        :param file_name: whatever QFileDialog.getOpenFileName returns (abs or canonical path?), or canonical
+        :return:
+        """
         file = QFile(file_name)
         if not file.open(QFile.ReadOnly | QFile.Text):
             QMessageBox.warning(self, "OneHandTextEdit",
@@ -416,6 +450,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("File loaded", 2000)
 
     def set_current_file(self, file_name: str):
+        """Sets cur_file to a canonical file path if file exists, otherwise a default placeholder bare file name.
+           Updates window title and resets widget to unmodified.
+           Updates recent files list.
+        """
         self.is_untitled = not file_name
         if self.is_untitled:
             self.cur_file = "document{!s}.txt".format(MainWindow.sequence_number)
@@ -428,6 +466,38 @@ class MainWindow(QMainWindow):
 
         stripped_name = QFileInfo(self.cur_file).fileName()
         self.setWindowTitle("{}[*]".format(stripped_name))
+
+        # Recent files
+        if self.is_untitled:
+            return
+
+        settings = QSettings('PMA', 'OneHandTextEdit')
+        recent_files: List = settings.value('recent_files', [])
+
+        try:
+            recent_files.remove(self.cur_file)
+        except ValueError:
+            pass
+        recent_files.insert(0, self.cur_file)
+        recent_files = recent_files[:MainWindow.max_recent_files]
+
+        settings.setValue('recent_files', recent_files)
+
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.update_recent_file_actions()
+
+    def update_recent_file_actions(self):
+        settings = QSettings('PMA', 'OneHandTextEdit')
+        recent_files: List = settings.value('recent_files', [])
+
+        for i, file in enumerate(recent_files):
+            self.recent_file_acts[i].setText(QFileInfo(file).fileName())
+            self.recent_file_acts[i].setData(file)
+            self.recent_file_acts[i].setVisible(True)
+
+        for j in range(len(recent_files), MainWindow.max_recent_files):
+            self.recent_file_acts[j].setVisible(False)
 
     def find_main_window(self, file_name):
         canonical_file_path = QFileInfo(file_name).canonicalFilePath()
