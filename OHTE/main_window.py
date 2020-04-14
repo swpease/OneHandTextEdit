@@ -274,14 +274,14 @@ class MainWindow(QMainWindow):
         self.file_menu = self.menuBar().addMenu("&File")
         self.file_menu.addAction(self.new_act)
         self.file_menu.addAction(self.open_act)
-        self.file_menu.addAction(self.save_act)
-        self.file_menu.addAction(self.save_as_act)
 
         self.recent_file_submenu = self.file_menu.addMenu("Open Recent")
         for act in self.recent_file_acts:
             self.recent_file_submenu.addAction(act)
         self.update_recent_file_actions()
 
+        self.file_menu.addAction(self.save_act)
+        self.file_menu.addAction(self.save_as_act)
         self.file_menu.addSeparator()
         self.print_submenu = self.file_menu.addMenu("&Print")
         self.print_submenu.addAction(self.print_act)
