@@ -54,6 +54,8 @@ class MainWindow(QMainWindow):
         else:
             self.set_current_file('')
 
+        QApplication.processEvents()  # fixes status bar color issue
+
     def closeEvent(self, event):
         if self.maybe_save():
             self.write_settings()
