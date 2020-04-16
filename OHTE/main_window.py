@@ -112,46 +112,43 @@ class MainWindow(QMainWindow):
     def about(self):
         QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
 
-    def print_(self):
-        printer = QPrinter()
-        print_dialog = QPrintDialog(printer, self)
-        if print_dialog.exec_() == QDialog.Accepted:
-            self.text_edit.print_(printer)
+    def print_(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
+        """
+        Prints text at any resolution with one-inch margins.
 
-    def generic_print_no_page_nums(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
-        """Prints without page numbers."""
-        # https://stackoverflow.com/questions/9430133/page-number-in-qtextdocument-for-envelopes
-        # https://code.woboq.org/qt5/qtbase/src/gui/text/qtextdocument.cpp.html#1922
-        # https://stackoverflow.com/questions/10299633/qtextdocumentdrawcontents-only-renders-at-96-dpi
-
-        # printer.paperRect() yields a QRect, the physical sheet of paper's size
-        # printer.pageRect() yields a QRect offset by and sized by the paperRect() minus its margins.
-        # ...same with printer.width and printer.height
-        # giving the `document` a larger than sensible `pageSize` yields too-small printed text (compare using
-        # pre- vs post-margin -adjusted printer.width, .height.
+        :param printer: A configured printer (put through QPrintDialog probably)
+        :param text_edit: The text editor.
+        :return: None. Side-effect: Prints the document.
+        """
         doc_clone = text_edit.document().clone()
         printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter.Millimeter)  # 1 inch margins
         doc_clone.documentLayout().setPaintDevice(printer)
         doc_clone.setPageSize(printer.pageRect().size())
         doc_clone.print_(printer)
 
+    def print_text(self):
+        printer = QPrinter(QPrinter.HighResolution)
+        print_dialog = QPrintDialog(printer, self)
+        if print_dialog.exec_() == QDialog.Accepted:
+            self.print_(printer, self.text_edit)
+
     def print_markdown(self):
         printer = QPrinter(QPrinter.HighResolution)
         print_dialog = QPrintDialog(printer, self)
         print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
         if print_dialog.exec_() == QDialog.Accepted:
-            self.generic_print_no_page_nums(printer, self.md_text_edit)
+            self.print_(printer, self.md_text_edit)
 
     def print_preview_markdown(self):
         printer = QPrinter(QPrinter.HighResolution)
         ppd = QPrintPreviewDialog(printer)
-        ppd.paintRequested.connect(lambda: self.generic_print_no_page_nums(printer, self.md_text_edit))
+        ppd.paintRequested.connect(lambda: self.print_(printer, self.md_text_edit))
         ppd.exec_()
 
     def print_preview(self):
-        printer = QPrinter()
+        printer = QPrinter(QPrinter.HighResolution)
         ppd = QPrintPreviewDialog(printer)
-        ppd.paintRequested.connect(lambda: self.text_edit.print_(printer))
+        ppd.paintRequested.connect(lambda: self.print_(printer, self.text_edit))
         ppd.exec_()
 
     # Format
@@ -191,7 +188,7 @@ class MainWindow(QMainWindow):
 
         self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
                                  statusTip="Print the document",
-                                 triggered=self.print_)
+                                 triggered=self.print_text)
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
 
         self.print_markdown_act = QAction("Print &Markdown...", self, triggered=self.print_markdown)
