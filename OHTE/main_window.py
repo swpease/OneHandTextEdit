@@ -1,4 +1,5 @@
 import json
+import functools
 from typing import Callable, Union, List
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp, QSizeF
@@ -126,29 +127,28 @@ class MainWindow(QMainWindow):
         doc_clone.setPageSize(printer.pageRect().size())
         doc_clone.print_(printer)
 
-    def print_text(self):
+    def print_with_setup(self, text_edit: Union[QTextEdit, MyPlainTextEdit]):
+        """
+        Get printer settings from the user, then print at High Resolution with those settings or cancel.
+
+        :param text_edit: A text editor containing a `document()` QTextDocument.
+        :return: None. Side effect: modal dialog, possibly printing.
+        """
         printer = QPrinter(QPrinter.HighResolution)
         print_dialog = QPrintDialog(printer, self)
         if print_dialog.exec_() == QDialog.Accepted:
-            self.print_(printer, self.text_edit)
+            self.print_(printer, text_edit)
 
-    def print_markdown(self):
-        printer = QPrinter(QPrinter.HighResolution)
-        print_dialog = QPrintDialog(printer, self)
-        print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
-        if print_dialog.exec_() == QDialog.Accepted:
-            self.print_(printer, self.md_text_edit)
+    def print_preview(self, text_edit: Union[QTextEdit, MyPlainTextEdit]):
+        """
+        Print preview a given text editor's `document()` at High Resolution.
 
-    def print_preview_markdown(self):
-        printer = QPrinter(QPrinter.HighResolution)
-        ppd = QPrintPreviewDialog(printer)
-        ppd.paintRequested.connect(lambda: self.print_(printer, self.md_text_edit))
-        ppd.exec_()
-
-    def print_preview(self):
+        :param text_edit: A text editor containing a `document()` QTextDocument.
+        :return: None. Side effect: modal print preview.
+        """
         printer = QPrinter(QPrinter.HighResolution)
         ppd = QPrintPreviewDialog(printer)
-        ppd.paintRequested.connect(lambda: self.print_(printer, self.text_edit))
+        ppd.paintRequested.connect(lambda: self.print_(printer, text_edit))
         ppd.exec_()
 
     # Format
@@ -188,16 +188,19 @@ class MainWindow(QMainWindow):
 
         self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
                                  statusTip="Print the document",
-                                 triggered=self.print_text)
+                                 triggered=functools.partial(self.print_with_setup, text_edit=self.text_edit))
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
 
-        self.print_markdown_act = QAction("Print &Markdown...", self, triggered=self.print_markdown)
+        self.print_markdown_act = QAction("Print &Markdown...", self,
+                                          triggered=functools.partial(self.print_with_setup, text_edit=self.md_text_edit))
         self.print_markdown_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_P),
                                               QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_R)])
 
-        self.print_preview_act = QAction("Print Preview...", self, triggered=self.print_preview)
+        self.print_preview_act = QAction("Print Preview...", self,
+                                         triggered=functools.partial(self.print_preview, text_edit=self.text_edit))
 
-        self.print_preview_markdown_act = QAction("Print Markdown Preview...", self, triggered=self.print_preview_markdown)
+        self.print_preview_markdown_act = QAction("Print Markdown Preview...", self,
+                                                  triggered=functools.partial(self.print_preview, text_edit=self.md_text_edit))
 
         self.close_act = QAction("&Close", self,
                                  statusTip="Close this window", triggered=self.close)
