@@ -121,20 +121,29 @@ class MainWindow(QMainWindow):
     def generic_print_no_page_nums(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
         """Prints without page numbers."""
         # https://stackoverflow.com/questions/9430133/page-number-in-qtextdocument-for-envelopes
-        # TODO: make toggle option?
-        paper_size = QSizeF(printer.width(), printer.height())
-        text_edit.document().setPageSize(paper_size)
-        text_edit.print_(printer)
+        # https://code.woboq.org/qt5/qtbase/src/gui/text/qtextdocument.cpp.html#1922
+        # https://stackoverflow.com/questions/10299633/qtextdocumentdrawcontents-only-renders-at-96-dpi
+
+        # printer.paperRect() yields a QRect, the physical sheet of paper's size
+        # printer.pageRect() yields a QRect offset by and sized by the paperRect() minus its margins.
+        # ...same with printer.width and printer.height
+        # giving the `document` a larger than sensible `pageSize` yields too-small printed text (compare using
+        # pre- vs post-margin -adjusted printer.width, .height.
+        doc_clone = text_edit.document().clone()
+        printer.setPageMargins(25.4, 25.4, 25.4, 25.4, QPrinter.Millimeter)  # 1 inch margins
+        doc_clone.documentLayout().setPaintDevice(printer)
+        doc_clone.setPageSize(printer.pageRect().size())
+        doc_clone.print_(printer)
 
     def print_markdown(self):
-        printer = QPrinter()
+        printer = QPrinter(QPrinter.HighResolution)
         print_dialog = QPrintDialog(printer, self)
         print_dialog.setWindowTitle("Print as Markdown")  # Does nothing on Mac
         if print_dialog.exec_() == QDialog.Accepted:
             self.generic_print_no_page_nums(printer, self.md_text_edit)
 
     def print_preview_markdown(self):
-        printer = QPrinter()
+        printer = QPrinter(QPrinter.HighResolution)
         ppd = QPrintPreviewDialog(printer)
         ppd.paintRequested.connect(lambda: self.generic_print_no_page_nums(printer, self.md_text_edit))
         ppd.exec_()

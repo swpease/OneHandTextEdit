@@ -5,6 +5,7 @@ import os.path
 from unittest.mock import MagicMock, patch
 
 from PySide2.QtWidgets import QToolButton, QMessageBox, QTextEdit, QDockWidget, QLabel, QApplication
+from PySide2.QtGui import QTextDocument
 from PySide2.QtCore import Qt, QSettings
 
 from OHTE.regex_map import create_regex_map
@@ -349,10 +350,10 @@ class TestPrintMarkdown(object):
     def test_print_called(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        QTextEdit.print_ = MagicMock()
+        QTextDocument.print_ = MagicMock()
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         # hit Return manually
-        assert QTextEdit.print_.call_count == 1
+        assert QTextDocument.print_.call_count == 1
 
 
 class TestPrintPreview(object):
@@ -368,6 +369,6 @@ class TestPrintMarkdownPreview(object):
     def test_basic(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.md_text_edit.print_ = MagicMock()
+        QTextDocument.print_ = MagicMock()
         main_win.print_preview_markdown_act.trigger()
-        assert main_win.md_text_edit.print_.call_count == 1
+        assert QTextDocument.print_.call_count == 1
