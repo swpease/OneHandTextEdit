@@ -75,6 +75,7 @@ def mainwin_recentfiles():
 
 
 class TestRecentFiles(object):
+    """This is a set of interdependent tests, which has its pros and cons. Also requires manual interaction."""
     def test_inactive_clear_recent(self, mainwin_recentfiles: MainWindow, qtbot):
         mainwin_recentfiles.show()
         qtbot.addWidget(mainwin_recentfiles)
