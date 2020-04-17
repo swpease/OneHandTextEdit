@@ -281,7 +281,11 @@ def del_word_from_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
 
 
 def word_to_lc_regex(word: str) -> str:
-    """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$" """
+    """Lower-case regex mapping. e.g. "AARdvarK" -> "^[a;][a;][ru][dk][vn][a;][ru][dk]$"
+
+       Note that these regexes are basically used as lookup keys, not for actual regexing.
+       For instance, the caret and backslash characters, as is, will yield incorrect / invalid patterns.
+    """
     regex = '^'
     for i in word:
         regex += letter_regex_map.get(i, '[' + i + ']')  # Do I need to worry about "\" escaping for Qt?
