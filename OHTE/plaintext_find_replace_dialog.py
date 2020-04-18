@@ -54,18 +54,41 @@ class PlainTextFindReplaceDialog(QDialog):
         find_and_replace_layout.addWidget(replace_label, 3, 0)
         find_and_replace_layout.addWidget(self.replace_line_edit, 3, 1)
 
-        btn_box = QDialogButtonBox(QDialogButtonBox.Close)
+        self.btn_box = QDialogButtonBox(QDialogButtonBox.Close)
         self.find_next_btn = QPushButton("Next")
+        self.find_next_btn.setEnabled(False)
         self.find_prev_btn = QPushButton("Previous")
+        self.find_prev_btn.setEnabled(False)
         self.replace_btn = QPushButton("Replace")
+        self.replace_btn.setEnabled(False)
         self.replace_all_btn = QPushButton("Replace All")
-        btn_box.addButton(self.replace_btn, QDialogButtonBox.ActionRole)
-        btn_box.addButton(self.replace_all_btn, QDialogButtonBox.ActionRole)
-        btn_box.addButton(self.find_prev_btn, QDialogButtonBox.ActionRole)
-        btn_box.addButton(self.find_next_btn, QDialogButtonBox.ActionRole)
+        self.replace_all_btn.setEnabled(False)
+        self.btn_box.addButton(self.replace_btn, QDialogButtonBox.ActionRole)
+        self.btn_box.addButton(self.replace_all_btn, QDialogButtonBox.ActionRole)
+        self.btn_box.addButton(self.find_prev_btn, QDialogButtonBox.ActionRole)
+        self.btn_box.addButton(self.find_next_btn, QDialogButtonBox.ActionRole)
 
-        layout.addWidget(btn_box)
+        layout.addWidget(self.btn_box)
         self.setLayout(layout)
+
+        self.btn_box.rejected.connect(self.reject)
+        self.find_line_edit.textEdited.connect(self._handle_text_edited)
+
+    def _handle_text_edited(self, text):
+        """
+        Modifies button states.
+
+        :param text: The find_line_edit's text.
+        :return: Side effect: btn enabled / default
+        """
+        find_enabled = text != ""
+        self.find_next_btn.setEnabled(find_enabled)
+        self.find_prev_btn.setEnabled(find_enabled)
+        self.replace_btn.setEnabled(find_enabled)
+        self.replace_all_btn.setEnabled(find_enabled)
+
+        self.find_next_btn.setDefault(find_enabled)
+        self.btn_box.button(QDialogButtonBox.Close).setDefault(not find_enabled)
 
 
 if __name__ == '__main__':
