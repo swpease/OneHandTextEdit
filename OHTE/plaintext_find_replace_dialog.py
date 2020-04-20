@@ -85,6 +85,7 @@ class PlainTextFindReplaceDialog(QDialog):
         self.find_next_btn.clicked.connect(self.next)
         self.find_prev_btn.clicked.connect(self.prev)
         self.replace_btn.clicked.connect(self.replace)
+        self.replace_all_btn.clicked.connect(self.replace_all)
         self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
         self.whole_word_check_box.stateChanged.connect(self.toggle_whole_word_flag)
         self.match_case_check_box.stateChanged.connect(self.toggle_match_case_flag)
@@ -165,6 +166,21 @@ class PlainTextFindReplaceDialog(QDialog):
     def init_find(self):
         """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
         pass
+
+    def replace_all(self):
+        """
+        Replaces all instances of Find's text with Replace's text.
+
+        :return: Side effect: replaces words in text edit
+        """
+        if self.cursors_needed:
+            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
+            self.cursors_needed = False
+            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+            self.plain_text_edit.setExtraSelections([])
+
+        for cur in self.found_cursors:
+            cur.insertText(self.replace_line_edit.text())
 
     def replace(self):
         """

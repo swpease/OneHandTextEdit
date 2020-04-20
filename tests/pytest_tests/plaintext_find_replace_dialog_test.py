@@ -237,6 +237,21 @@ class TestReplace(object):
         assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
         assert es[2].format.background().color().getRgb() == es[1].format.background().color().getRgb()
 
+
+class TestReplaceAll(object):
+    def test_replace_all(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.keyClicks(d.replace_line_edit, "l")
+        qtbot.mouseClick(d.replace_all_btn, Qt.LeftButton)
+        assert te.toPlainText() == "l l"
+
+
 class TestClose(object):
     def test_clears_highlights_on_close(self, stuff, qtbot):
         te: QPlainTextEdit = stuff[0]
