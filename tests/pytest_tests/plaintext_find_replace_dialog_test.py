@@ -70,7 +70,7 @@ class TestNext(object):
         qtbot.addWidget(te)
         qtbot.addWidget(d)
 
-        te.setPlainText("hi hi hi")
+        qtbot.keyClicks(te, "hi hi hi")
         qtbot.keyClicks(d.find_line_edit, "hi")
         # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
         qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
@@ -123,6 +123,68 @@ class TestNext(object):
         qtbot.keyClicks(d.find_line_edit, "hi")
         # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
         qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert te.textCursor().position() == d.current_cursor.position()
+
+
+class TestPrev(object):
+    def test_highlight_basic(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+
+        es = te.extraSelections()
+        assert len(es) == 3
+        # back to second (b/c te cursor is at end of doc)
+        assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
+        assert es[2].format.background().color().getRgb() == es[0].format.background().color().getRgb()
+
+    def test_cycles_back(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        es = te.extraSelections()
+        assert len(es) == 3
+        assert es[0].format.background().color().getRgb() != es[2].format.background().color().getRgb()
+        assert es[1].format.background().color().getRgb() == es[0].format.background().color().getRgb()
+
+    def test_refinds_on_te_edit(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        te.setPlainText("hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        qtbot.keyClick(te, Qt.Key_Backspace)
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        es = te.extraSelections()
+        assert len(es) == 2
+
+    def test_moves_te_cursor(self, stuff, qtbot):
+        # doing this updates the viewport to have current cursor selection in frame.
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        te.setPlainText("hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
         assert te.textCursor().position() == d.current_cursor.position()
 
 

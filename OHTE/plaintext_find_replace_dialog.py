@@ -83,6 +83,7 @@ class PlainTextFindReplaceDialog(QDialog):
         self.btn_box.rejected.connect(self.reject)
         self.find_line_edit.textEdited.connect(self._handle_text_edited)
         self.find_next_btn.clicked.connect(self.next)
+        self.find_prev_btn.clicked.connect(self.prev)
         self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
         self.whole_word_check_box.stateChanged.connect(self.toggle_whole_word_flag)
         self.match_case_check_box.stateChanged.connect(self.toggle_match_case_flag)
@@ -129,23 +130,10 @@ class PlainTextFindReplaceDialog(QDialog):
             else:
                 found.append(cursor)
 
-    def next(self):
-        if self.cursors_needed:
-            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
-            self.cursors_needed = False
-            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
-            self.plain_text_edit.setExtraSelections([])
-
-        if not self.found_cursors:
-            return
-
-        if self.current_cursor >= self.found_cursors[-1]:  # loop back to start. cursor equality based on position.
-            self.current_cursor = self.found_cursors[0]
-        else:
-            for cur in self.found_cursors:
-                if cur > self.current_cursor:  # next in order
-                    self.current_cursor = cur
-                    break
+    def update_textedit_visuals(self):
+        """
+        Moves text editor's cursor to match currently highlighted `find` word, and performs the `find` highlighting.
+        """
         # move along text editor's viewport
         next_pte_cursor = QTextCursor(self.current_cursor)
         next_pte_cursor.clearSelection()
@@ -164,6 +152,50 @@ class PlainTextFindReplaceDialog(QDialog):
                 selection.format.setBackground(normal_color)
             extra_selections.append(selection)
         self.plain_text_edit.setExtraSelections(extra_selections)
+
+    def init_find(self):
+        """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
+        pass
+
+    def prev(self):
+        if self.cursors_needed:
+            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
+            self.cursors_needed = False
+            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+            self.plain_text_edit.setExtraSelections([])
+
+        if not self.found_cursors:
+            return
+
+        if self.current_cursor <= self.found_cursors[0]:  # loop back to end.
+            self.current_cursor = self.found_cursors[-1]
+        else:
+            for cur in reversed(self.found_cursors):
+                if cur < self.current_cursor:  # prev in order
+                    self.current_cursor = cur
+                    break
+
+        self.update_textedit_visuals()
+
+    def next(self):
+        if self.cursors_needed:
+            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
+            self.cursors_needed = False
+            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+            self.plain_text_edit.setExtraSelections([])
+
+        if not self.found_cursors:
+            return
+
+        if self.current_cursor >= self.found_cursors[-1]:  # loop back to start. cursor equality based on position.
+            self.current_cursor = self.found_cursors[0]
+        else:
+            for cur in self.found_cursors:
+                if cur > self.current_cursor:  # next in order
+                    self.current_cursor = cur
+                    break
+
+        self.update_textedit_visuals()
 
     def _handle_text_edited(self, text):
         """
