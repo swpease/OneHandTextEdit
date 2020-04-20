@@ -204,6 +204,39 @@ class TestPrev(object):
         assert te.textCursor().position() == d.current_cursor.position()
 
 
+class TestReplace(object):
+    def test_same_as_next_when_cursors_needed(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.mouseClick(d.replace_btn, Qt.LeftButton)
+
+        es = te.extraSelections()
+        assert len(es) == 4
+        # wraps around to first (b/c te cursor is at end of doc)
+        assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
+        assert es[2].format.background().color().getRgb() == es[1].format.background().color().getRgb()
+
+    def test_replace(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.mouseClick(d.replace_btn, Qt.LeftButton)  # find next called
+        qtbot.mouseClick(d.replace_btn, Qt.LeftButton)  # replace
+
+        es = te.extraSelections()
+        assert len(es) == 3
+        assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
+        assert es[2].format.background().color().getRgb() == es[1].format.background().color().getRgb()
+
 class TestClose(object):
     def test_clears_highlights_on_close(self, stuff, qtbot):
         te: QPlainTextEdit = stuff[0]

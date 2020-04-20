@@ -84,6 +84,7 @@ class PlainTextFindReplaceDialog(QDialog):
         self.find_line_edit.textEdited.connect(self._handle_text_edited)
         self.find_next_btn.clicked.connect(self.next)
         self.find_prev_btn.clicked.connect(self.prev)
+        self.replace_btn.clicked.connect(self.replace)
         self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
         self.whole_word_check_box.stateChanged.connect(self.toggle_whole_word_flag)
         self.match_case_check_box.stateChanged.connect(self.toggle_match_case_flag)
@@ -164,6 +165,27 @@ class PlainTextFindReplaceDialog(QDialog):
     def init_find(self):
         """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
         pass
+
+    def replace(self):
+        """
+        Replaces the word under focus by `next`.
+
+        Replaces with the Replace line edit's text, and advances to next word. If no word under focus via this dialog,
+        calls `next`.
+        :return: Side effect: replaces word in text edit
+        """
+        if self.cursors_needed:
+            self.next()
+            return
+
+        if not self.found_cursors:
+            return
+
+        self.plain_text_edit.document().contentsChanged.disconnect(self.set_cursors_needed_true)  # don't dup work.
+        self.current_cursor.insertText(self.replace_line_edit.text())
+        self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
+        self.found_cursors.remove(self.current_cursor)
+        self.next()
 
     def prev(self):
         if self.cursors_needed:
