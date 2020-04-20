@@ -165,7 +165,10 @@ class PlainTextFindReplaceDialog(QDialog):
 
     def init_find(self):
         """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
-        pass
+        self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
+        self.cursors_needed = False
+        self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+        self.plain_text_edit.setExtraSelections([])
 
     def replace_all(self):
         """
@@ -174,10 +177,7 @@ class PlainTextFindReplaceDialog(QDialog):
         :return: Side effect: replaces words in text edit
         """
         if self.cursors_needed:
-            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
-            self.cursors_needed = False
-            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
-            self.plain_text_edit.setExtraSelections([])
+            self.init_find()
 
         for cur in self.found_cursors:
             cur.insertText(self.replace_line_edit.text())
@@ -205,10 +205,7 @@ class PlainTextFindReplaceDialog(QDialog):
 
     def prev(self):
         if self.cursors_needed:
-            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
-            self.cursors_needed = False
-            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
-            self.plain_text_edit.setExtraSelections([])
+            self.init_find()
 
         if not self.found_cursors:
             return
@@ -225,10 +222,7 @@ class PlainTextFindReplaceDialog(QDialog):
 
     def next(self):
         if self.cursors_needed:
-            self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
-            self.cursors_needed = False
-            self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
-            self.plain_text_edit.setExtraSelections([])
+            self.init_find()
 
         if not self.found_cursors:
             return
