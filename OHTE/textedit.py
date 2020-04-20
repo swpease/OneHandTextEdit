@@ -266,7 +266,7 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, e: QKeyEvent):
         if self.mode == Mode.INSERT:
-            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
+            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:  # TODO: Enter key?
                 self.process_previous_word()
             super().keyPressEvent(e)
 

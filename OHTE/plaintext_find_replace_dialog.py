@@ -3,7 +3,7 @@ from typing import List
 
 from PySide2.QtWidgets import (QDialog, QLabel, QLineEdit, QDialogButtonBox, QPushButton, QPlainTextEdit, QTextEdit,
                                QVBoxLayout, QHBoxLayout, QGridLayout, QCheckBox, QApplication)
-from PySide2.QtGui import QTextDocument, QTextCursor, QColor
+from PySide2.QtGui import QTextDocument, QTextCursor, QColor, QKeyEvent
 from PySide2.QtCore import Qt
 
 
@@ -91,6 +91,14 @@ class PlainTextFindReplaceDialog(QDialog):
     def closeEvent(self, arg__1):
         self.plain_text_edit.setExtraSelections([])
         super().closeEvent(arg__1)
+
+    def keyPressEvent(self, arg__1: QKeyEvent):
+        # Shift+Enter triggers find previous, if the corresponding btn is enabled.
+        if (arg__1.key() in [Qt.Key_Return, Qt.Key_Enter] and arg__1.modifiers() == Qt.ShiftModifier
+                and self.find_prev_btn.isEnabled()):
+            self.prev()
+        else:
+            super().keyPressEvent(arg__1)
 
     def set_cursors_needed_true(self):
         self.cursors_needed = True

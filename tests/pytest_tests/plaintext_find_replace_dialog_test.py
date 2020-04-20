@@ -143,6 +143,22 @@ class TestPrev(object):
         assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
         assert es[2].format.background().color().getRgb() == es[0].format.background().color().getRgb()
 
+    def test_shiftenter_basic(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.keyClick(d, Qt.Key_Return, Qt.ShiftModifier)
+
+        es = te.extraSelections()
+        assert len(es) == 3
+        # back to second (b/c te cursor is at end of doc)
+        assert es[0].format.background().color().getRgb() != es[1].format.background().color().getRgb()
+        assert es[2].format.background().color().getRgb() == es[0].format.background().color().getRgb()
+
     def test_cycles_back(self, stuff, qtbot):
         te: QPlainTextEdit = stuff[0]
         d: PlainTextFindReplaceDialog = stuff[1]
