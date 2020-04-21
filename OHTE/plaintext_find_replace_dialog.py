@@ -92,17 +92,100 @@ class PlainTextFindReplaceDialog(QDialog):
         self.whole_word_check_box.stateChanged.connect(self.toggle_whole_word_flag)
         self.match_case_check_box.stateChanged.connect(self.toggle_match_case_flag)
 
-    def closeEvent(self, arg__1):
-        self.plain_text_edit.setExtraSelections([])
-        super().closeEvent(arg__1)
+    # SLOTS
+    def next(self):
+        if self.cursors_needed:
+            self.init_find()
 
-    def keyPressEvent(self, arg__1: QKeyEvent):
-        # Shift+Enter triggers find previous, if the corresponding btn is enabled.
-        if (arg__1.key() in [Qt.Key_Return, Qt.Key_Enter] and arg__1.modifiers() == Qt.ShiftModifier
-                and self.find_prev_btn.isEnabled()):
-            self.prev()
+        if not self.found_cursors:
+            self.found_info_label.setText("No matches found")
+            self.found_info_label.repaint()
+            return
+
+        if self.current_cursor >= self.found_cursors[-1]:  # loop back to start. cursor equality based on position.
+            self.current_cursor = self.found_cursors[0]
         else:
-            super().keyPressEvent(arg__1)
+            for cur in self.found_cursors:
+                if cur > self.current_cursor:  # next in order
+                    self.current_cursor = cur
+                    break
+
+        self.update_visuals()
+
+    def prev(self):
+        if self.cursors_needed:
+            self.init_find()
+
+        if not self.found_cursors:
+            self.found_info_label.setText("No matches found")
+            self.found_info_label.repaint()
+            return
+
+        if self.current_cursor <= self.found_cursors[0]:  # loop back to end.
+            self.current_cursor = self.found_cursors[-1]
+        else:
+            for cur in reversed(self.found_cursors):
+                if cur < self.current_cursor:  # prev in order
+                    self.current_cursor = cur
+                    break
+
+        self.update_visuals()
+
+    def replace(self):
+        """
+        Replaces the word under focus by `next`.
+
+        Replaces with the Replace line edit's text, and advances to next word. If no word under focus via this dialog,
+        calls `next`.
+        :return: Side effect: replaces word in text edit
+        """
+        if self.cursors_needed:
+            self.next()
+            return
+
+        if not self.found_cursors:
+            return
+
+        self.plain_text_edit.document().contentsChanged.disconnect(self.set_cursors_needed_true)  # don't dup work.
+        self.current_cursor.insertText(self.replace_line_edit.text())
+        self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
+        self.found_cursors.remove(self.current_cursor)
+        self.next()
+
+    def replace_all(self):
+        """
+        Replaces all instances of Find's text with Replace's text.
+
+        :return: Side effect: replaces words in text edit
+        """
+        if self.cursors_needed:
+            self.init_find()
+
+        for cur in self.found_cursors:
+            cur.insertText(self.replace_line_edit.text())
+
+        self.found_info_label.setText("Made {} replacements".format(len(self.found_cursors)))
+        self.found_info_label.repaint()
+
+    def _handle_text_edited(self, text):
+        """
+        Modifies button states, clears info text, and sets self.cursors_needed to True.
+
+        :param text: The find_line_edit's text.
+        :return: Side effect: btn enabled / default
+        """
+        self.found_info_label.clear()
+
+        self.cursors_needed = True
+
+        find_enabled = text != ""
+        self.find_next_btn.setEnabled(find_enabled)
+        self.find_prev_btn.setEnabled(find_enabled)
+        self.replace_btn.setEnabled(find_enabled)
+        self.replace_all_btn.setEnabled(find_enabled)
+
+        self.find_next_btn.setDefault(find_enabled)
+        self.btn_box.button(QDialogButtonBox.Close).setDefault(not find_enabled)
 
     def set_cursors_needed_true(self):
         self.cursors_needed = True
@@ -122,25 +205,14 @@ class PlainTextFindReplaceDialog(QDialog):
             self.find_flags &= ~QTextDocument.FindWholeWords
         elif state == Qt.Checked:
             self.find_flags |= QTextDocument.FindWholeWords
+    # END SLOTS
 
-    def find_all(self, text: str, document: QTextDocument, flags=QTextDocument.FindFlags()) -> List[QTextCursor]:
-        """
-        Finds all occurrences of `text` in `document`, in order.
-
-        :param text: Text to find.
-        :param document: Document to search.
-        :param flags: Conditions to set on the search: none or (whole word and/or match case)
-        :return: Ordered list of all found instances.
-        """
-        cursor = QTextCursor(document)  # default pos == 0
-        found: List[QTextCursor] = []
-
-        while True:
-            cursor = document.find(text, cursor, flags)
-            if cursor.isNull():
-                return found
-            else:
-                found.append(cursor)
+    def init_find(self):
+        """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
+        self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
+        self.cursors_needed = False
+        self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+        self.plain_text_edit.setExtraSelections([])
 
     def update_visuals(self):
         """
@@ -171,106 +243,36 @@ class PlainTextFindReplaceDialog(QDialog):
             extra_selections.append(selection)
         self.plain_text_edit.setExtraSelections(extra_selections)
 
-    def init_find(self):
-        """Sets up internal state for the case when cursors are needed (e.g. first find, user modifies doc...)"""
-        self.found_cursors = self.find_all(self.find_line_edit.text(), self.plain_text_edit.document(), self.find_flags)
-        self.cursors_needed = False
-        self.current_cursor = self.plain_text_edit.textCursor()  # returns copy of
+    def find_all(self, text: str, document: QTextDocument, flags=QTextDocument.FindFlags()) -> List[QTextCursor]:
+        """
+        Finds all occurrences of `text` in `document`, in order.
+
+        :param text: Text to find.
+        :param document: Document to search.
+        :param flags: Conditions to set on the search: none or (whole word and/or match case)
+        :return: Ordered list of all found instances.
+        """
+        cursor = QTextCursor(document)  # default pos == 0
+        found: List[QTextCursor] = []
+
+        while True:
+            cursor = document.find(text, cursor, flags)
+            if cursor.isNull():
+                return found
+            else:
+                found.append(cursor)
+
+    def closeEvent(self, arg__1):
         self.plain_text_edit.setExtraSelections([])
+        super().closeEvent(arg__1)
 
-    def replace_all(self):
-        """
-        Replaces all instances of Find's text with Replace's text.
-
-        :return: Side effect: replaces words in text edit
-        """
-        if self.cursors_needed:
-            self.init_find()
-
-        for cur in self.found_cursors:
-            cur.insertText(self.replace_line_edit.text())
-
-        self.found_info_label.setText("Made {} replacements".format(len(self.found_cursors)))
-        self.found_info_label.repaint()
-
-    def replace(self):
-        """
-        Replaces the word under focus by `next`.
-
-        Replaces with the Replace line edit's text, and advances to next word. If no word under focus via this dialog,
-        calls `next`.
-        :return: Side effect: replaces word in text edit
-        """
-        if self.cursors_needed:
-            self.next()
-            return
-
-        if not self.found_cursors:
-            return
-
-        self.plain_text_edit.document().contentsChanged.disconnect(self.set_cursors_needed_true)  # don't dup work.
-        self.current_cursor.insertText(self.replace_line_edit.text())
-        self.plain_text_edit.document().contentsChanged.connect(self.set_cursors_needed_true)
-        self.found_cursors.remove(self.current_cursor)
-        self.next()
-
-    def prev(self):
-        if self.cursors_needed:
-            self.init_find()
-
-        if not self.found_cursors:
-            self.found_info_label.setText("No matches found")
-            self.found_info_label.repaint()
-            return
-
-        if self.current_cursor <= self.found_cursors[0]:  # loop back to end.
-            self.current_cursor = self.found_cursors[-1]
+    def keyPressEvent(self, arg__1: QKeyEvent):
+        # Shift+Enter triggers find previous, if the corresponding btn is enabled.
+        if (arg__1.key() in [Qt.Key_Return, Qt.Key_Enter] and arg__1.modifiers() == Qt.ShiftModifier
+                and self.find_prev_btn.isEnabled()):
+            self.prev()
         else:
-            for cur in reversed(self.found_cursors):
-                if cur < self.current_cursor:  # prev in order
-                    self.current_cursor = cur
-                    break
-
-        self.update_visuals()
-
-    def next(self):
-        if self.cursors_needed:
-            self.init_find()
-
-        if not self.found_cursors:
-            self.found_info_label.setText("No matches found")
-            self.found_info_label.repaint()
-            return
-
-        if self.current_cursor >= self.found_cursors[-1]:  # loop back to start. cursor equality based on position.
-            self.current_cursor = self.found_cursors[0]
-        else:
-            for cur in self.found_cursors:
-                if cur > self.current_cursor:  # next in order
-                    self.current_cursor = cur
-                    break
-
-        self.update_visuals()
-
-    def _handle_text_edited(self, text):
-        """
-        Modifies button states, clears info text, and sets self.cursors_needed to True.
-
-        :param text: The find_line_edit's text.
-        :return: Side effect: btn enabled / default
-        """
-        self.found_info_label.clear()
-
-        self.cursors_needed = True
-
-        find_enabled = text != ""
-        self.find_next_btn.setEnabled(find_enabled)
-        self.find_prev_btn.setEnabled(find_enabled)
-        self.replace_btn.setEnabled(find_enabled)
-        self.replace_all_btn.setEnabled(find_enabled)
-
-        self.find_next_btn.setDefault(find_enabled)
-        self.btn_box.button(QDialogButtonBox.Close).setDefault(not find_enabled)
+            super().keyPressEvent(arg__1)
 
 
 if __name__ == '__main__':
