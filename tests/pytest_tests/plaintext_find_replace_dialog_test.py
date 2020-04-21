@@ -252,6 +252,63 @@ class TestReplaceAll(object):
         assert te.toPlainText() == "l l"
 
 
+class TestInfoLabel(object):
+    def test_replace_all_notifies_num_of_replacements(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        qtbot.keyClicks(d.replace_line_edit, "l")
+        qtbot.mouseClick(d.replace_all_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "Made 2 replacements"
+
+    def test_next_and_prev_displays_x_of_y_if_matches(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "hi")
+        # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "2 of 3 matches"
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "1 of 3 matches"
+
+    def test_no_matches_says_so(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "kjhlkj")
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+        qtbot.mouseClick(d.find_prev_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+        qtbot.keyClicks(d.replace_line_edit, "l")
+        qtbot.mouseClick(d.replace_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+
+    def test_changing_thing_to_find_clears(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "kjhlkj")
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+        qtbot.keyClicks(d.find_line_edit, "k")
+        assert not d.found_info_label.text()
+
 class TestClose(object):
     def test_clears_highlights_on_close(self, stuff, qtbot):
         te: QPlainTextEdit = stuff[0]

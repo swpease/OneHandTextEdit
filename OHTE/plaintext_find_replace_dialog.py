@@ -50,6 +50,8 @@ class PlainTextFindReplaceDialog(QDialog):
         options_layout.addWidget(self.whole_word_check_box)
         options_layout.addStretch()
 
+        self.found_info_label = QLabel()
+
         self.replace_line_edit = QLineEdit()
         replace_label = QLabel("&Replace")
         replace_label.setBuddy(self.replace_line_edit)
@@ -58,7 +60,7 @@ class PlainTextFindReplaceDialog(QDialog):
         find_and_replace_layout.addWidget(self.find_line_edit, 0, 1)
         find_and_replace_layout.addLayout(options_layout, 1, 1)
         find_and_replace_layout.setRowMinimumHeight(2, 20)
-        find_and_replace_layout.addLayout(QHBoxLayout(), 2, 0)  # Spacing to assoc. options with Find, not Replace
+        find_and_replace_layout.addWidget(self.found_info_label, 2, 1)
         find_and_replace_layout.addWidget(replace_label, 3, 0)
         find_and_replace_layout.addWidget(self.replace_line_edit, 3, 1)
 
@@ -140,10 +142,16 @@ class PlainTextFindReplaceDialog(QDialog):
             else:
                 found.append(cursor)
 
-    def update_textedit_visuals(self):
+    def update_visuals(self):
         """
-        Moves text editor's cursor to match currently highlighted `find` word, and performs the `find` highlighting.
+        Moves text editor's cursor to match currently highlighted `find` word, performs `find` highlighting,
+        indicates index on dialog.
         """
+        # x of y words indicator
+        idx = self.found_cursors.index(self.current_cursor) + 1
+        self.found_info_label.setText("{} of {} matches".format(idx, len(self.found_cursors)))
+        self.found_info_label.repaint()
+
         # move along text editor's viewport
         next_pte_cursor = QTextCursor(self.current_cursor)
         next_pte_cursor.clearSelection()
@@ -182,6 +190,9 @@ class PlainTextFindReplaceDialog(QDialog):
         for cur in self.found_cursors:
             cur.insertText(self.replace_line_edit.text())
 
+        self.found_info_label.setText("Made {} replacements".format(len(self.found_cursors)))
+        self.found_info_label.repaint()
+
     def replace(self):
         """
         Replaces the word under focus by `next`.
@@ -208,6 +219,8 @@ class PlainTextFindReplaceDialog(QDialog):
             self.init_find()
 
         if not self.found_cursors:
+            self.found_info_label.setText("No matches found")
+            self.found_info_label.repaint()
             return
 
         if self.current_cursor <= self.found_cursors[0]:  # loop back to end.
@@ -218,13 +231,15 @@ class PlainTextFindReplaceDialog(QDialog):
                     self.current_cursor = cur
                     break
 
-        self.update_textedit_visuals()
+        self.update_visuals()
 
     def next(self):
         if self.cursors_needed:
             self.init_find()
 
         if not self.found_cursors:
+            self.found_info_label.setText("No matches found")
+            self.found_info_label.repaint()
             return
 
         if self.current_cursor >= self.found_cursors[-1]:  # loop back to start. cursor equality based on position.
@@ -235,15 +250,17 @@ class PlainTextFindReplaceDialog(QDialog):
                     self.current_cursor = cur
                     break
 
-        self.update_textedit_visuals()
+        self.update_visuals()
 
     def _handle_text_edited(self, text):
         """
-        Modifies button states and sets self.cursors_needed to True.
+        Modifies button states, clears info text, and sets self.cursors_needed to True.
 
         :param text: The find_line_edit's text.
         :return: Side effect: btn enabled / default
         """
+        self.found_info_label.clear()
+
         self.cursors_needed = True
 
         find_enabled = text != ""
