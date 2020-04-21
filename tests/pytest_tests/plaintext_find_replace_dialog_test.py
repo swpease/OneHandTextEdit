@@ -309,6 +309,24 @@ class TestInfoLabel(object):
         qtbot.keyClicks(d.find_line_edit, "k")
         assert not d.found_info_label.text()
 
+    def test_toggling_flags_clears(self, stuff, qtbot):
+        te: QPlainTextEdit = stuff[0]
+        d: PlainTextFindReplaceDialog = stuff[1]
+        qtbot.addWidget(te)
+        qtbot.addWidget(d)
+
+        qtbot.keyClicks(te, "hi hi hi")
+        qtbot.keyClicks(d.find_line_edit, "kjhlkj")
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+        d.match_case_check_box.setChecked(True)
+        assert not d.found_info_label.text()
+        qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
+        assert d.found_info_label.text() == "No matches found"
+        d.whole_word_check_box.setChecked(True)
+        assert not d.found_info_label.text()
+
+
 class TestClose(object):
     def test_clears_highlights_on_close(self, stuff, qtbot):
         te: QPlainTextEdit = stuff[0]

@@ -211,6 +211,7 @@ class PlainTextFindReplaceDialog(QDialog):
         self.cursors_needed = True
 
     def toggle_match_case_flag(self, state: int):
+        self.found_info_label.clear()  # User will be performing a new search upon toggle, so want this reset.
         self.cursors_needed = True
 
         if state == Qt.Unchecked:
@@ -219,6 +220,7 @@ class PlainTextFindReplaceDialog(QDialog):
             self.find_flags |= QTextDocument.FindCaseSensitively
 
     def toggle_whole_word_flag(self, state: int):
+        self.found_info_label.clear()  # User will be performing a new search upon toggle, so want this reset.
         self.cursors_needed = True
 
         if state == Qt.Unchecked:
