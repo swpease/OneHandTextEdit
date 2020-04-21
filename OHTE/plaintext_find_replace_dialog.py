@@ -12,12 +12,18 @@ class PlainTextFindReplaceDialog(QDialog):
     Modeless, stay-above-parent dialog that supports find and replace.
 
     Allows for searching case (in)sensitively, and whole-word.
-    Find triggered by Enter / Shift+Enter, or corresponding button (Next / Previous).
+    Find triggered by Enter / Shift+Enter, or corresponding button (Next / Previous), or if Replace clicked before
+    Next / Previous.
     Find wraps.
     Highlights all matches, operating on the closest-to-user's-cursor selection first,
     in the user-selected direction (Next / Previous).
     Highlighting / found cursors retained on navigation back to text editor, and cleared on re-find/replace if
     user modified the document.
+    Presents an info label (e.g. "x of y", "No matches found", ...)
+
+    While no members have a leading underscore, the only explicit public interface is the static method `find_all`.
+    I couldn't find a reason to need to interface with anything in here, so I didn't differentiate everything as
+    "private".
     """
 
     def __init__(self, plain_text_edit: QPlainTextEdit, parent=None):
@@ -83,7 +89,7 @@ class PlainTextFindReplaceDialog(QDialog):
         # End UI
 
         self.btn_box.rejected.connect(self.reject)
-        self.find_line_edit.textEdited.connect(self._handle_text_edited)
+        self.find_line_edit.textEdited.connect(self.handle_text_edited)
         self.find_next_btn.clicked.connect(self.next)
         self.find_prev_btn.clicked.connect(self.prev)
         self.replace_btn.clicked.connect(self.replace)
@@ -181,7 +187,7 @@ class PlainTextFindReplaceDialog(QDialog):
         self.found_info_label.setText("Made {} replacements".format(len(self.found_cursors)))
         self.found_info_label.repaint()
 
-    def _handle_text_edited(self, text):
+    def handle_text_edited(self, text):
         """
         Modifies button states, clears info text, and sets self.cursors_needed to True.
 
