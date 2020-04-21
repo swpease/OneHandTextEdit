@@ -94,6 +94,13 @@ class PlainTextFindReplaceDialog(QDialog):
 
     # SLOTS
     def next(self):
+        """
+        Finds all matches to the user's search. First highlight after cursor. Consecutive calls advance through matches.
+
+        If there are matches or not, it says so. The user's cursor advances along with the current selection. Loops back
+        to start after the last match.
+        :return: Side effect: Highlights all matches, differentiating (maybe moving fwd) the current selection.
+        """
         if self.cursors_needed:
             self.init_find()
 
@@ -113,6 +120,13 @@ class PlainTextFindReplaceDialog(QDialog):
         self.update_visuals()
 
     def prev(self):
+        """
+        Finds all matches to user's search. First highlight before cursor. Consecutive calls retreat through matches.
+
+        If there are matches or not, it says so. The user's cursor moves along with the current selection. Loops back
+        to end after the last (first in doc) match.
+        :return: Side effect: Highlights all matches, differentiating (maybe moving back) the current selection.
+        """
         if self.cursors_needed:
             self.init_find()
 
@@ -156,7 +170,7 @@ class PlainTextFindReplaceDialog(QDialog):
         """
         Replaces all instances of Find's text with Replace's text.
 
-        :return: Side effect: replaces words in text edit
+        :return: Side effect: replaces words in text edit. Indicates success to user via info label on dialog.
         """
         if self.cursors_needed:
             self.init_find()
@@ -243,7 +257,8 @@ class PlainTextFindReplaceDialog(QDialog):
             extra_selections.append(selection)
         self.plain_text_edit.setExtraSelections(extra_selections)
 
-    def find_all(self, text: str, document: QTextDocument, flags=QTextDocument.FindFlags()) -> List[QTextCursor]:
+    @staticmethod
+    def find_all(text: str, document: QTextDocument, flags=QTextDocument.FindFlags()) -> List[QTextCursor]:
         """
         Finds all occurrences of `text` in `document`, in order.
 
