@@ -322,6 +322,16 @@ class TestModeSwitch(object):
         assert [] == main_win.text_edit.extraSelections()
 
 
+class TestFind(object):
+    def test_hookup(self, main_win: MainWindow, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.show_find_and_replace_dialog = MagicMock()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_F, modifier=Qt.ControlModifier)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_J, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert main_win.show_find_and_replace_dialog.call_count == 2
+
+
 class TestPrint(object):
     def test_hookup(self, main_win, qtbot):
         main_win.show()

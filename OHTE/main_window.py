@@ -10,6 +10,7 @@ from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
 from OHTE.textedit import MyPlainTextEdit
 from OHTE.validating_dialog import ValidatingDialog
+from OHTE.plaintext_find_replace_dialog import PlainTextFindReplaceDialog
 from OHTE.regex_map import add_word_to_dict, del_word_from_dict
 
 import ohte_rc
@@ -242,6 +243,9 @@ class MainWindow(QMainWindow):
         self.select_all_act = QAction("Select All", self, triggered=self.text_edit.selectAll)
         self.select_all_act.setShortcuts([QKeySequence.SelectAll, QKeySequence(Qt.CTRL + Qt.Key_Semicolon)])
 
+        self.find_and_replace_act = QAction("Find and Replace...", self, triggered=self.show_find_and_replace_dialog)
+        self.find_and_replace_act.setShortcuts([QKeySequence.Find, QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_J)])
+
         # About
         self.about_act = QAction("&About", self,
                                  statusTip="Show the application's About box",
@@ -319,6 +323,8 @@ class MainWindow(QMainWindow):
         self.edit_menu.addAction(self.copy_act)
         self.edit_menu.addAction(self.paste_act)
         self.edit_menu.addAction(self.select_all_act)
+        self.edit_menu.addSeparator()
+        self.edit_menu.addAction(self.find_and_replace_act)
 
         self.format_menu = self.menuBar().addMenu("For&mat")
         self.font_submenu = self.format_menu.addMenu("&Font")
@@ -549,6 +555,10 @@ class MainWindow(QMainWindow):
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    def show_find_and_replace_dialog(self):
+        find_replace_dialog = PlainTextFindReplaceDialog(self.text_edit, parent=self)
+        find_replace_dialog.show()
 
     def show_add_word_dialog(self):
         self.show_validating_dialog("Add word:", self.handle_add_word)
