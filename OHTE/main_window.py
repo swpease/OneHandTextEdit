@@ -2,8 +2,8 @@ import json
 import functools
 from typing import Callable, Union, List
 
-from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp, QSizeF
-from PySide2.QtGui import QIcon, QKeySequence, QRegExpValidator
+from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
+from PySide2.QtGui import QKeySequence, QRegExpValidator
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
                                QDockWidget, QFontDialog, QLabel)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
@@ -12,8 +12,6 @@ from OHTE.textedit import MyPlainTextEdit
 from OHTE.validating_dialog import ValidatingDialog
 from OHTE.plaintext_find_replace_dialog import PlainTextFindReplaceDialog
 from OHTE.regex_map import add_word_to_dict, del_word_from_dict
-
-import ohte_rc
 
 
 class MainWindow(QMainWindow):
@@ -39,7 +37,6 @@ class MainWindow(QMainWindow):
 
         self.create_actions()
         self.create_menus()
-        self.create_tool_bars()
         self.create_status_bar()
         self.create_dock_widget()
 
@@ -160,17 +157,17 @@ class MainWindow(QMainWindow):
     # noinspection PyAttributeOutsideInit
     def create_actions(self):
         # File
-        self.new_act = QAction(QIcon(':/images/new.png'), "&New", self,
+        self.new_act = QAction("&New", self,
                                statusTip="Create a new file",
                                triggered=self.new_file)
         self.new_act.setShortcuts([QKeySequence.New, QKeySequence(Qt.CTRL + Qt.Key_B)])
 
-        self.open_act = QAction(QIcon(':/images/open.png'), "&Open...", self,
+        self.open_act = QAction("&Open...", self,
                                 statusTip="Open an existing file",
                                 triggered=self.open)
         self.open_act.setShortcuts([QKeySequence.Open, QKeySequence(Qt.CTRL + Qt.Key_T)])
 
-        self.save_act = QAction(QIcon(':/images/save.png'), "&Save", self,
+        self.save_act = QAction("&Save", self,
                                 statusTip="Save the document to disk", triggered=self.save)
         self.save_act.setShortcuts([QKeySequence.Save, QKeySequence(Qt.CTRL + Qt.Key_L)])
 
@@ -187,7 +184,7 @@ class MainWindow(QMainWindow):
                                               enabled=False,
                                               triggered=self.clear_recent_files)
 
-        self.print_act = QAction(QIcon(':/images/print.png'), "&Print...", self,
+        self.print_act = QAction("&Print...", self,
                                  statusTip="Print the document",
                                  triggered=functools.partial(self.print_with_setup, text_edit=self.text_edit))
         self.print_act.setShortcuts([QKeySequence.Print, QKeySequence(Qt.CTRL + Qt.Key_R)])
@@ -223,19 +220,19 @@ class MainWindow(QMainWindow):
                                 triggered=self.text_edit.redo)
         self.redo_act.setShortcuts([QKeySequence.Redo, QKeySequence(Qt.CTRL + Qt.Key_Y)])
 
-        self.cut_act = QAction(QIcon(':/images/cut.png'), "Cu&t", self,
+        self.cut_act = QAction("Cu&t", self,
                                enabled=False,
                                statusTip="Cut the current selection's contents to the clipboard",
                                triggered=self.text_edit.cut)
         self.cut_act.setShortcuts([QKeySequence.Cut, QKeySequence(Qt.CTRL + Qt.Key_Period)])
 
-        self.copy_act = QAction(QIcon(':/images/copy.png'), "&Copy", self,
+        self.copy_act = QAction("&Copy", self,
                                 enabled=False,
                                 statusTip="Copy the current selection's contents to the clipboard",
                                 triggered=self.text_edit.copy)
         self.copy_act.setShortcuts([QKeySequence.Copy, QKeySequence(Qt.CTRL + Qt.Key_Comma)])
 
-        self.paste_act = QAction(QIcon(':/images/paste.png'), "&Paste", self,
+        self.paste_act = QAction("&Paste", self,
                                  statusTip="Paste the clipboard's contents into the current selection",
                                  triggered=self.text_edit.paste)
         self.paste_act.setShortcuts([QKeySequence.Paste, QKeySequence(Qt.CTRL + Qt.Key_M)])
@@ -268,12 +265,12 @@ class MainWindow(QMainWindow):
         self.md_font_act = QAction("Markdown Font...", self, triggered=self.set_markdown_font)
 
         # Dictionary
-        self.add_word_act = QAction(QIcon(':/images/icons8-plus-64.png'), "Add Word...", self,
+        self.add_word_act = QAction("Add Word...", self,
                                     statusTip="Add a word to the dictionary",
                                     triggered=self.show_add_word_dialog)
         self.add_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_J), QKeySequence(Qt.CTRL + Qt.Key_G)])
 
-        self.delete_word_act = QAction(QIcon(':/images/icons8-delete-64.png'), "Delete Word...", self,
+        self.delete_word_act = QAction("Delete Word...", self,
                                        statusTip="Delete a word from the dictionary",
                                        triggered=self.show_del_word_dialog)
         self.delete_word_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.Key_D), QKeySequence(Qt.CTRL + Qt.Key_U)])
@@ -345,23 +342,6 @@ class MainWindow(QMainWindow):
         self.help_menu = self.menuBar().addMenu("&Help")
         self.help_menu.addAction(self.about_act)
         self.help_menu.addAction(self.about_Qt_act)
-
-    # noinspection PyAttributeOutsideInit
-    def create_tool_bars(self):
-        self.file_tool_bar = self.addToolBar("File")
-        self.file_tool_bar.addAction(self.new_act)
-        self.file_tool_bar.addAction(self.open_act)
-        self.file_tool_bar.addAction(self.save_act)
-        self.file_tool_bar.addAction(self.print_act)
-
-        self.edit_tool_bar = self.addToolBar("Edit")
-        self.edit_tool_bar.addAction(self.cut_act)
-        self.edit_tool_bar.addAction(self.copy_act)
-        self.edit_tool_bar.addAction(self.paste_act)
-
-        self.dict_tool_bar = self.addToolBar('Dictionary')
-        self.dict_tool_bar.addAction(self.add_word_act)
-        self.dict_tool_bar.addAction(self.delete_word_act)
 
     def create_dock_widget(self):
         """

@@ -218,10 +218,10 @@ class TestDockingSetup(object):
 
 
 class TestAddWord(object):
-    def test_add_word(self, main_win, qtbot):
+    def test_add_word(self, main_win: MainWindow, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.dict_tool_bar.findChildren(QToolButton)[1].click()
+        main_win.add_word_act.trigger()
         vd = main_win.findChildren(ValidatingDialog)[-1]
         qtbot.keyClicks(vd.line_edit, 'mat')
         qtbot.keyClick(vd, Qt.Key_Enter)
@@ -230,7 +230,7 @@ class TestAddWord(object):
     def test_add_duplicate_word(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.dict_tool_bar.findChildren(QToolButton)[1].click()
+        main_win.add_word_act.trigger()
         vd = main_win.findChildren(ValidatingDialog)[-1]
         qtbot.keyClicks(vd.line_edit, 'may')
         qtbot.keyClick(vd, Qt.Key_Enter)
@@ -239,10 +239,10 @@ class TestAddWord(object):
 
 
 class TestDelWord(object):
-    def test_del_missing_word(self, main_win, qtbot):
+    def test_del_missing_word(self, main_win: MainWindow, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.dict_tool_bar.findChildren(QToolButton)[2].click()
+        main_win.delete_word_act.trigger()
         vd = main_win.findChildren(ValidatingDialog)[-1]
         qtbot.keyClicks(vd.line_edit, 'mat')
         qtbot.keyClick(vd, Qt.Key_Enter)
@@ -251,7 +251,7 @@ class TestDelWord(object):
     def test_del_word(self, main_win, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
-        main_win.dict_tool_bar.findChildren(QToolButton)[2].click()
+        main_win.delete_word_act.trigger()
         vd = main_win.findChildren(ValidatingDialog)[-1]
         qtbot.keyClicks(vd.line_edit, 'may')
         qtbot.keyClick(vd, Qt.Key_Enter)
