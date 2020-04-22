@@ -1,45 +1,44 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, mock_open, patch
 import os
 import json
 
-from OHTE.regex_map import create_regex_map
 from OHTE.main_window import MainWindow
 from OHTE import main
 
 
-src = 'test_words.txt'
-dest = 'test_out.json'
-main.DICT_SRC = dest
-regex_map: dict = {}
-main.REGEX_MAP = regex_map
+DEST = 'regex_map.json'
 
 
 def setUpModule():
-    words = ["e", "i"]
-    with open(src, 'w') as f:
-        for word in words:
-            f.write("%s\n" % word)
-    create_regex_map([src], [False], dest)
-
-    with open(dest) as f:
-        global regex_map
-        regex_map = json.load(f)
+    with open(DEST, 'w') as f:
+        f.write("hi")
 
 
 def tearDownModule():
-    os.remove(src)
-    os.remove(dest)
+    os.remove(DEST)
 
 
-class TestSaveDict(unittest.TestCase):
-    # only test one of these at a time, or else multiple instances of QApplication are created and it breaks.
-    def test_save(self):
+class TestMain(unittest.TestCase):
+    # ONLY CALL ONE PER RUN OR ELSE CRASHES B/C QAPP NOT DELETED FOR SOME REASON
+    def test_save_dictionary_called_on_close(self):
         MainWindow.dict_modified = True
-        json.dump = MagicMock()
+        main.save_dictionary = MagicMock()
+        fake_dict = {'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}
+        json.load = MagicMock(return_value=fake_dict)
         with self.assertRaises(SystemExit) as se:
             main.main()
-        json.dump.assert_called_once()
+        main.save_dictionary.assert_called_once()
+        main.save_dictionary.assert_called_with(DEST, DEST, fake_dict)
+
+    def test_opens_default_src_when_not_found_in_users_file_system(self):
+        open_spy = mock_open()
+        with patch('builtins.open', open_spy):
+            fake_dict = {'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}
+            json.load = MagicMock(return_value=fake_dict)
+            with self.assertRaises(SystemExit) as se:
+                main.main()
+        open_spy.assert_called_with(DEST)
 
 
 if __name__ == '__main__':
