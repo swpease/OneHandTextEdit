@@ -525,7 +525,6 @@ class MainWindow(QMainWindow):
     def show_validating_dialog(self, input_label: str, handler: Callable[[str], None]):
         regex = QRegExp(r'[A-Za-z]+([A-Za-z\'-]+[A-Za-z]+|[A-Za-z]*)')
         validator = QRegExpValidator(regex)
-        # TODO set VD as parent.
         help_dialog = QMessageBox(QMessageBox.Information, "OneHandTextEdit",
                                   "A word can only contain letters (upper or lower case) and "
                                   "contain (but not start or end with) - (dashes) and ' (apostrophes).",

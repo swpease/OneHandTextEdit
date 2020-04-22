@@ -52,7 +52,6 @@ class MyPlainTextEdit(QPlainTextEdit):
         """Pickup where you left off so the list cycling is sane."""
         if self.wordcheck_entry is not None:
             try:
-                # TODO: adjust for caps?
                 self.entry_idx = self.wordcheck_entry['words'].index(self.wordcheck_cursor.selection().toPlainText())
             except ValueError as e:
                 self.entry_idx = 0
@@ -266,7 +265,7 @@ class MyPlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, e: QKeyEvent):
         if self.mode == Mode.INSERT:
-            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:  # TODO: Enter key?
+            if e.key() in [Qt.Key_Space, Qt.Key_Return, Qt.Key_Slash] and e.modifiers() == Qt.NoModifier:
                 self.process_previous_word()
             super().keyPressEvent(e)
 
