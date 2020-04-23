@@ -40,7 +40,9 @@ class MainWindow(QMainWindow):
         self.create_status_bar()
         self.create_dock_widget()
 
-        self.read_settings()
+        QApplication.processEvents()  # fixes status bar color issue
+
+        self.read_settings()  # must go after processEvents() to avoid resize overwrite
 
         # self.text_edit.document().contentsChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(self.document_was_modified)
@@ -52,8 +54,6 @@ class MainWindow(QMainWindow):
             self.load_file(file_name)
         else:
             self.set_current_file('')
-
-        QApplication.processEvents()  # fixes status bar color issue
 
     def closeEvent(self, event):
         if self.maybe_save():
