@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
 from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from OHTE.regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, set_entry_default, Entry
+from OHTE.regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, set_entry_default
 
 
 class Mode(Enum):
@@ -21,13 +21,13 @@ class MyPlainTextEdit(QPlainTextEdit):
     entry_default_set = Signal()
     mode_toggled = Signal(str)
 
-    def __init__(self, regex_map: Dict[str, Entry]):
+    def __init__(self, regex_map):
         super().__init__()  # Pass parent?
 
         self.regex_map = regex_map
         self.mode = Mode.INSERT
         self.wordcheck_cursor: QTextCursor = self.textCursor()
-        self.wordcheck_entry: Optional[Entry] = None
+        self.wordcheck_entry = None
         self.entry_idx = 0
         self.autocaps = True
 
@@ -112,7 +112,7 @@ class MyPlainTextEdit(QPlainTextEdit):
         if self.mode == Mode.WORDCHECK:
             self.setup_wordcheck_for_word_under_cursor()
 
-    def highlight_word(self, cursor: QTextCursor, entry: Optional[Entry]):
+    def highlight_word(self, cursor: QTextCursor, entry):
         selection = QTextEdit.ExtraSelection()
         normal_color = QColor(Qt.yellow).lighter()
         missing_color = QColor(Qt.magenta).lighter()

@@ -1,14 +1,9 @@
 from collections import defaultdict
-from typing import TypedDict, List, Optional, Dict
+from typing import List, Optional
 import json
 import re
 import os
 import copy
-
-
-class Entry(TypedDict):
-    default: str
-    words: List[str]
 
 
 # Assumes default key mappings.
@@ -94,7 +89,7 @@ letter_to_symbol_map = {
 }
 
 
-def _handle_entry_caps(entry: Entry) -> Entry:
+def _handle_entry_caps(entry):
     capitalized_words = [wd.capitalize() for wd in entry['words']]
 
     if entry['default'][0].isupper():  # Don't know if caps were intended -> keep cap and non-cap.
@@ -111,7 +106,7 @@ def _handle_entry_caps(entry: Entry) -> Entry:
     return entry
 
 
-def set_entry_default(word: str, regex_map: Dict[str, Entry]) -> bool:
+def set_entry_default(word: str, regex_map) -> bool:
     """
     Sets word as default for its Entry, if it exists. Mutates the regex_map.
 
@@ -124,13 +119,13 @@ def set_entry_default(word: str, regex_map: Dict[str, Entry]) -> bool:
 
     base_word = word
     regex: str = word_to_lc_regex(base_word)
-    entry: Optional[Entry] = regex_map.get(regex)
+    entry = regex_map.get(regex)
     if entry is None:
         # check if possessive
         if base_word.endswith('\'s'):
             base_word = base_word[:-2]
             regex: str = word_to_lc_regex(base_word)
-            entry: Optional[Entry] = regex_map.get(regex)
+            entry = regex_map.get(regex)
         if entry is None:
             return False
 
@@ -148,7 +143,7 @@ def set_entry_default(word: str, regex_map: Dict[str, Entry]) -> bool:
     return True
 
 
-def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[Entry]:
+def map_word_to_entry(raw_word: str, regex_map):
     """
     Tries to map a word to an Entry.
 
@@ -162,7 +157,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     is_capitalized = raw_word[0].isupper()
 
     regex: str = word_to_lc_regex(raw_word)
-    entry: Optional[Entry] = regex_map.get(regex)
+    entry = regex_map.get(regex)
     if entry is not None:
         entry_copy = copy.deepcopy(entry)
         if is_capitalized:
@@ -173,7 +168,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     # No word found. Check for possessives.
     if raw_word.endswith('\'s'):  # You could eff this up if you manually overwrote s with l.
         regex: str = word_to_lc_regex(raw_word[:-2])
-        entry: Optional[Entry] = regex_map.get(regex)
+        entry = regex_map.get(regex)
         if entry is not None:
             entry_copy = copy.deepcopy(entry)
             entry_copy['default'] = entry_copy['default'] + "'s"
@@ -187,7 +182,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
     return  # No matched, so return None.
 
 
-def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[str]:
+def map_string_to_word(raw_word: str, regex_map) -> Optional[str]:
     """
     Tries to map a string to an Entry, and takes its 'default' plus necessary punctuation.
     Assumes default keyboard character mapping (so that, e.g., `z` and `.` are mirrored).
@@ -213,7 +208,7 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     tail = ''
     while len(possible_word) >= len(root):
         regex: str = word_to_lc_regex(possible_word)
-        entry: Optional[Entry] = regex_map.get(regex)
+        entry = regex_map.get(regex)
         if entry is not None:
             default = entry['default']
             word = default + tail
@@ -229,7 +224,7 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     tail = tail[1:]  # Overshot in above while loop.
     if re.search(r'\'[sl]$', root) is not None:
         regex: str = word_to_lc_regex(root[:-2])
-        entry: Optional[Entry] = regex_map.get(regex)
+        entry = regex_map.get(regex)
         if entry is not None:
             default = entry['default']
             word = default + "'s" + tail
@@ -241,7 +236,7 @@ def map_string_to_word(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[s
     return  # No matched, so return None.
 
 
-def add_word_to_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
+def add_word_to_dict(word: str, regex_map) -> bool:
     """
     Add a word to a regex map dictionary. Mutates the regex_map to include word.
     :param word: Word to add to dictionary.
@@ -255,11 +250,11 @@ def add_word_to_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
             entry['words'].append(word)
             return True
     else:
-        regex_map[regex]: Entry = {'default': word, 'words': [word]}
+        regex_map[regex] = {'default': word, 'words': [word]}
         return True
 
 
-def del_word_from_dict(word: str, regex_map: Dict[str, Entry]) -> bool:
+def del_word_from_dict(word: str, regex_map) -> bool:
     """
     Deletes a word from a regex map dictionary. Mutates the regex_map to remove word.
     :param word: Word to remove from dictionary.
@@ -329,7 +324,7 @@ def create_regex_map(src: List[str], keep_capitals: List[bool], dest='regex_map.
 
     regex_map = dict()
     for regex, words in regex_words.items():
-        regex_map[regex]: Entry = {'default': words[0], 'words': words}
+        regex_map[regex] = {'default': words[0], 'words': words}
 
     with open(dest, 'w') as f:
         json.dump(regex_map, f)

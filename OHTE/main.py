@@ -7,10 +7,9 @@ from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import QStandardPaths, QDir
 
 from OHTE.main_window import MainWindow
-from OHTE.regex_map import Entry
 
 
-def save_dictionary(file_name: str, dict_src: str, regex_map: Dict[str, Entry]):
+def save_dictionary(file_name: str, dict_src: str, regex_map):
     """Saves the dictionary if user modified it. Connected to aboutToQuit signal."""
     if MainWindow.dict_modified:
         if dict_src == file_name:  # TODO: change for deploy? check sig too

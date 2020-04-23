@@ -339,7 +339,7 @@ class TestPrint(object):
         main_win.print_ = MagicMock()
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=Qt.ControlModifier)
         qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=Qt.ControlModifier)
-        assert main_win.print_.call_args.args[1] == main_win.text_edit
+        assert main_win.print_.call_args[0][1] == main_win.text_edit
         assert main_win.print_.call_count == 2
 
 
@@ -350,7 +350,7 @@ class TestPrintMarkdown(object):
         main_win.print_ = MagicMock()
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
-        assert main_win.print_.call_args.args[1] == main_win.md_text_edit
+        assert main_win.print_.call_args[0][1] == main_win.md_text_edit
         assert main_win.print_.call_count == 2
 
 
@@ -360,7 +360,7 @@ class TestPrintPreview(object):
         qtbot.addWidget(main_win)
         main_win.print_ = MagicMock()
         main_win.print_preview_act.trigger()
-        assert main_win.print_.call_args.args[1] == main_win.text_edit
+        assert main_win.print_.call_args[0][1] == main_win.text_edit
         assert main_win.print_.call_count == 1
 
 
@@ -370,5 +370,5 @@ class TestPrintMarkdownPreview(object):
         qtbot.addWidget(main_win)
         main_win.print_ = MagicMock()
         main_win.print_preview_markdown_act.trigger()
-        assert main_win.print_.call_args.args[1] == main_win.md_text_edit
+        assert main_win.print_.call_args[0][1] == main_win.md_text_edit
         assert main_win.print_.call_count == 1
