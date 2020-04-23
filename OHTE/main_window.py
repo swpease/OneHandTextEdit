@@ -3,7 +3,7 @@ import functools
 from typing import Callable, Union, List
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
-from PySide2.QtGui import QKeySequence, QRegExpValidator
+from PySide2.QtGui import QKeySequence, QRegExpValidator, QPixmap
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
                                QDockWidget, QFontDialog, QLabel)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
@@ -109,7 +109,22 @@ class MainWindow(QMainWindow):
             self.open_file(file_name)
 
     def about(self):
-        QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
+        about_dialog = QMessageBox(QMessageBox.Information, "OneHandTextEdit", "<h2>OneHandTextEdit</h2>",
+                                   QMessageBox.Close, self)
+        # TODO: set in deploy
+        # icon = QPixmap("/Users/Scott/Desktop/128.png")
+        # if not icon.isNull():
+        #     about_dialog.setIconPixmap(icon)
+        about_dialog.setInformativeText(
+            """
+            <b>v 0.1.0</b>
+            <br>
+            license: <a href='https://www.gnu.org/licenses/gpl-3.0.txt'>GNU GPL 3.0</a>
+            <br>
+            inspiration: <a href='https://blog.xkcd.com/2007/08/14/mirrorboard-a-one-handed-keyboard-layout-for-the-lazy/'>xkcd</a>
+            """
+        )
+        about_dialog.exec_()
 
     def print_(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
         """
