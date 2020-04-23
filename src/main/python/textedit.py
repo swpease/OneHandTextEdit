@@ -8,7 +8,7 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QTextCursor, QKeyEvent, QColor
 from PySide2.QtWidgets import QApplication, QPlainTextEdit, QTextEdit
 
-from OHTE.regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, set_entry_default
+from regex_map import map_word_to_entry, map_string_to_word, letter_to_symbol_map, set_entry_default
 
 
 class Mode(Enum):

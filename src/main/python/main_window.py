@@ -8,10 +8,10 @@ from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, 
                                QDockWidget, QFontDialog, QLabel)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
 
-from OHTE.textedit import MyPlainTextEdit
-from OHTE.validating_dialog import ValidatingDialog
-from OHTE.plaintext_find_replace_dialog import PlainTextFindReplaceDialog
-from OHTE.regex_map import add_word_to_dict, del_word_from_dict
+from textedit import MyPlainTextEdit
+from validating_dialog import ValidatingDialog
+from plaintext_find_replace_dialog import PlainTextFindReplaceDialog
+from regex_map import add_word_to_dict, del_word_from_dict
 
 
 class MainWindow(QMainWindow):
