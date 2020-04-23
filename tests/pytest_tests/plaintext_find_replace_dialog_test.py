@@ -338,7 +338,7 @@ class TestClose(object):
         qtbot.keyClicks(d.find_line_edit, "hi")
         # qtbot.keyClick(dc, Qt.Key_Return)  # not working...
         qtbot.mouseClick(d.find_next_btn, Qt.LeftButton)
-        d.close()
+        d.reject()
         assert not te.extraSelections()
 
 

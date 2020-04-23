@@ -285,9 +285,9 @@ class PlainTextFindReplaceDialog(QDialog):
             else:
                 found.append(cursor)
 
-    def closeEvent(self, arg__1):
+    def done(self, arg__1: int):
         self.plain_text_edit.setExtraSelections([])
-        super().closeEvent(arg__1)
+        super().done(arg__1)
 
     def keyPressEvent(self, arg__1: QKeyEvent):
         # Shift+Enter triggers find previous, if the corresponding btn is enabled.
