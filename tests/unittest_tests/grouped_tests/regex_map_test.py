@@ -86,16 +86,16 @@ class TestEntryMapping(unittest.TestCase):
         word = 'ax\'s'
         entry = map_word_to_entry(word, self.regex_map)
         self.assertEqual(word, entry['default'])
-        self.assertEqual([word], entry['words'])
+        self.assertEqual([word, word.capitalize()], entry['words'])
 
     def test_caps_stuff(self):
         entry = map_word_to_entry('may', self.regex_map)
         self.assertEqual(entry['default'], 'may')
-        self.assertEqual(entry['words'], ['may', 'cat', 'May'])
+        self.assertEqual(entry['words'], ['may', 'cat', 'May', 'Cat'])
 
         entry = map_word_to_entry('May', self.regex_map)
-        self.assertEqual(entry['default'], 'May')
-        self.assertEqual(entry['words'], ['May', 'Cat'])
+        self.assertEqual(entry['default'], 'may')
+        self.assertEqual(entry['words'], ['may', 'cat', 'May', 'Cat'])
 
         entry = map_word_to_entry('Hi', self.regex_map)
         self.assertEqual(entry['default'], 'Hi')

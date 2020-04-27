@@ -95,18 +95,14 @@ letter_to_symbol_map = {
 
 
 def _handle_entry_caps(entry: Entry) -> Entry:
+    """e.g. ["Fin", "fin", "fen"] --> ["Fin", "fin", "fen", "Fen"] """
     capitalized_words = [wd.capitalize() for wd in entry['words']]
-
-    if entry['default'][0].isupper():  # Don't know if caps were intended -> keep cap and non-cap.
-        deduped_words = [wd for wd in capitalized_words if wd not in entry['words']]
-        entry['words'].extend(deduped_words)
-    else:  # User explicitly capitalized word -> only want capitalized words.
-        deduped_words = []
-        for wd in capitalized_words:
-            if wd not in deduped_words:
-                deduped_words.append(wd)
-        entry['words'] = deduped_words
-        entry['default'] = entry['default'].capitalize()
+    deduped_cap_words = []
+    for wd in capitalized_words:
+        if wd not in deduped_cap_words:
+            deduped_cap_words.append(wd)
+    deduped_words = [wd for wd in deduped_cap_words if wd not in entry['words']]
+    entry['words'].extend(deduped_words)
 
     return entry
 
@@ -154,21 +150,16 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
 
     :param raw_word: pattern ~ r'([A-Za-z\'-]+)$' , w/o leading or trailing `'`
     :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
-    :return: A deep copy of the Entry, if it exists.
+    :return: A deep copy of the Entry, if it exists, with upper case options appended for all lower cased words.
     """
     if len(raw_word) == 0:
         return
-
-    is_capitalized = raw_word[0].isupper()
 
     regex: str = word_to_lc_regex(raw_word)
     entry: Optional[Entry] = regex_map.get(regex)
     if entry is not None:
         entry_copy = copy.deepcopy(entry)
-        if is_capitalized:
-            return _handle_entry_caps(entry_copy)
-        else:
-            return entry_copy
+        return _handle_entry_caps(entry_copy)
 
     # No word found. Check for possessives.
     if raw_word.endswith('\'s'):  # You could eff this up if you manually overwrote s with l.
@@ -179,10 +170,7 @@ def map_word_to_entry(raw_word: str, regex_map: Dict[str, Entry]) -> Optional[En
             entry_copy['default'] = entry_copy['default'] + "'s"
             possessive_words = [word + "'s" for word in entry_copy['words']]
             entry_copy['words'] = possessive_words
-            if is_capitalized:
-                return _handle_entry_caps(entry_copy)
-            else:
-                return entry_copy
+            return _handle_entry_caps(entry_copy)
 
     return  # No matched, so return None.
 
