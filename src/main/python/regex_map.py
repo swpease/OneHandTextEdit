@@ -89,7 +89,7 @@ letter_to_symbol_map = {
 }
 
 
-def _handle_entry_caps(entry: Entry) -> Entry:
+def _handle_entry_caps(entry):
     """e.g. ["Fin", "fin", "fen"] --> ["Fin", "fin", "fen", "Fen"] """
     capitalized_words = [wd.capitalize() for wd in entry['words']]
     deduped_cap_words = []
