@@ -3,7 +3,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextDocument
 from PySide2.QtWidgets import QPushButton, QDialogButtonBox, QPlainTextEdit
 
-from OHTE.plaintext_find_replace_dialog import PlainTextFindReplaceDialog
+from src.main.python.plaintext_find_replace_dialog import PlainTextFindReplaceDialog
 
 @pytest.fixture()
 def stuff():

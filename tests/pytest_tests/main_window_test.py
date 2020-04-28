@@ -8,10 +8,10 @@ from PySide2.QtWidgets import QToolButton, QMessageBox, QDockWidget, QLabel, QAp
 from PySide2.QtCore import Qt, QSettings
 from PySide2.QtPrintSupport import QPrintDialog
 
-from OHTE.regex_map import create_regex_map
-from OHTE.main_window import MainWindow
-from OHTE.validating_dialog import ValidatingDialog
-from OHTE.textedit import Mode
+from src.main.python.regex_map import create_regex_map
+from src.main.python.main_window import MainWindow
+from src.main.python.validating_dialog import ValidatingDialog
+from src.main.python.textedit import Mode
 
 
 # Mocking modal.
@@ -162,7 +162,7 @@ class TestRecentFiles(object):
 class TestEntryDefaultSet(object):
     """Checks that everything is hooked up right from MainWindow down to the regex_map fn call."""
     def test_true(self, main_win, qtbot):
-        with patch('OHTE.textedit.set_entry_default', return_value=True) as mock:
+        with patch('src.main.python.textedit.set_entry_default', return_value=True) as mock:
             main_win.show()
             qtbot.addWidget(main_win)
             # main_win.text_edit.set_wordcheck_word_as_default = MagicMock()
@@ -173,7 +173,7 @@ class TestEntryDefaultSet(object):
 
     # checking other hotkey
     def test_true_b(self, main_win, qtbot):
-        with patch('OHTE.textedit.set_entry_default', return_value=True) as mock:
+        with patch('src.main.python.textedit.set_entry_default', return_value=True) as mock:
             main_win.show()
             qtbot.addWidget(main_win)
             # main_win.text_edit.set_wordcheck_word_as_default = MagicMock()
@@ -183,7 +183,7 @@ class TestEntryDefaultSet(object):
             assert MainWindow.dict_modified
 
     def test_false(self, main_win, qtbot):
-        with patch('OHTE.textedit.set_entry_default', return_value=False) as mock:
+        with patch('src.main.python.textedit.set_entry_default', return_value=False) as mock:
             main_win.show()
             qtbot.addWidget(main_win)
             qtbot.keyClick(main_win.text_edit, Qt.Key_E, modifier=Qt.ControlModifier)

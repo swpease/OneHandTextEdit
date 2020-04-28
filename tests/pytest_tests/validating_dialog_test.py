@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QRegExpValidator
 from PySide2.QtWidgets import QMessageBox, QPushButton
 
-from OHTE.validating_dialog import ValidatingDialog
+from src.main.python.validating_dialog import ValidatingDialog
 
 
 class TestVDBtns(object):

@@ -2,8 +2,8 @@ import unittest
 import os
 import json
 
-from OHTE.regex_map import (word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word,
-                            add_word_to_dict, del_word_from_dict, set_entry_default)
+from src.main.python.regex_map import (word_to_lc_regex, create_regex_map, map_word_to_entry, map_string_to_word,
+                                       add_word_to_dict, del_word_from_dict, set_entry_default)
 
 
 class TestRegexMaker(unittest.TestCase):

@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, mock_open, patch
 
 from PySide2.QtCore import QStandardPaths, QDir
 
-from OHTE.main_window import MainWindow
-from OHTE import main
+from src.main.python.main_window import MainWindow
+from src.main.python import main
 
 
 class TestSave(object):

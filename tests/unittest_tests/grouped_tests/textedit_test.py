@@ -7,8 +7,8 @@ from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QApplication
 from PySide2.QtTest import QTest
 
-from OHTE.textedit import MyPlainTextEdit, Mode
-from OHTE.regex_map import create_regex_map
+from src.main.python.textedit import MyPlainTextEdit, Mode
+from src.main.python.regex_map import create_regex_map
 
 
 src = 'test_words.txt'
