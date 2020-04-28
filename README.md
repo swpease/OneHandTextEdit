@@ -6,3 +6,4 @@ Differences:
   - imports need to be changed
     - deployment: `from OHTE.x` --> `from x`
     - testing:    `from OHTE.x` --> `from src.main.python.x`
+  - tests of `main` do not currently work, because `main` relies on an `fbs` object (vs `QApplication`) in deployment.
