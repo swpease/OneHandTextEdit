@@ -8,17 +8,17 @@ from OHTE.regex_map import (word_to_lc_regex, create_regex_map, map_word_to_entr
 
 class TestRegexMaker(unittest.TestCase):
     def test_basic(self):
-        self.assertEqual(word_to_lc_regex('a'), '^[a;]$')
+        self.assertEqual(word_to_lc_regex('a'), 'a')
 
     def test_casing(self):
-        self.assertEqual(word_to_lc_regex('AaA'), '^[a;][a;][a;]$')
-        self.assertEqual(word_to_lc_regex(':<>'), '^[a;][x,][z.]$', msg="symbols lowerize")
+        self.assertEqual(word_to_lc_regex('AaA'), 'aaa')
+        self.assertEqual(word_to_lc_regex(':<>'), 'axz', msg="symbols lowerize")
 
     def test_missing_keys(self):
-        self.assertEqual(word_to_lc_regex('2@'), '^[2][@]$')
+        self.assertEqual(word_to_lc_regex('2@'), '2@')
 
     def test_raw_backslash(self):
-        self.assertEqual(word_to_lc_regex(r'\n'), r'^[\][vn]$')
+        self.assertEqual(word_to_lc_regex(r'\n'), r'\v')
 
 
 class TestWordMapping(unittest.TestCase):
@@ -86,16 +86,16 @@ class TestEntryMapping(unittest.TestCase):
         word = 'ax\'s'
         entry = map_word_to_entry(word, self.regex_map)
         self.assertEqual(word, entry['default'])
-        self.assertEqual([word], entry['words'])
+        self.assertEqual([word, word.capitalize()], entry['words'])
 
     def test_caps_stuff(self):
         entry = map_word_to_entry('may', self.regex_map)
         self.assertEqual(entry['default'], 'may')
-        self.assertEqual(entry['words'], ['may', 'cat', 'May'])
+        self.assertEqual(entry['words'], ['may', 'cat', 'May', 'Cat'])
 
         entry = map_word_to_entry('May', self.regex_map)
-        self.assertEqual(entry['default'], 'May')
-        self.assertEqual(entry['words'], ['May', 'Cat'])
+        self.assertEqual(entry['default'], 'may')
+        self.assertEqual(entry['words'], ['may', 'cat', 'May', 'Cat'])
 
         entry = map_word_to_entry('Hi', self.regex_map)
         self.assertEqual(entry['default'], 'Hi')
@@ -130,7 +130,7 @@ class TestRegexMapMaker(unittest.TestCase):
         create_regex_map([self.src1, self.src2, self.src3], [False, True], self.dest)
         with open(self.dest) as f:
             output = f.readline()
-        self.assertEqual(output, '{"^[a;]$": {"default": "a", "words": ["a"]}, "^[ty][gh][ei]$": {"default": "the", "words": ["the", "thi"]}, "^[b]$": {"default": "B", "words": ["B"]}}')
+        self.assertEqual(output, '{"a": {"default": "a", "words": ["a"]}, "tge": {"default": "the", "words": ["the", "thi"]}, "b": {"default": "B", "words": ["B"]}}')
 
 
 class TestAddWord(unittest.TestCase):
@@ -152,19 +152,19 @@ class TestAddWord(unittest.TestCase):
         os.remove(cls.dest)
 
     def test_duplicate_word(self):
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         add_word_to_dict('may', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
 
     def test_existing_entry(self):
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         add_word_to_dict('cay', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
 
     def test_no_entry(self):
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat', 'cay']}}")
         add_word_to_dict('a', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat', 'cay']}, '^[a;]$': {'default': 'a', 'words': ['a']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat', 'cay']}, 'a': {'default': 'a', 'words': ['a']}}")
 
 
 class TestDelWord(unittest.TestCase):
@@ -187,17 +187,17 @@ class TestDelWord(unittest.TestCase):
 
     def test_missing_entry(self):
         res = del_word_from_dict('x', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         self.assertFalse(res)
 
     def test_missing_word(self):
         res = del_word_from_dict('mat', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         self.assertFalse(res)
 
     def test_remove_default(self):
         res = del_word_from_dict('may', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'cat', 'words': ['cat']}}")
         self.assertTrue(res)
 
     def test_remove_only(self):
@@ -224,39 +224,39 @@ class TestSetDefault(unittest.TestCase):
 
     def test_empty_entry(self):
         res = set_entry_default('', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         self.assertFalse(res)
 
     def test_missing_entry(self):
         res = set_entry_default('x', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}}")
         self.assertFalse(res)
 
     def test_basic(self):
         res = set_entry_default('cat', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'cat', 'words': ['may', 'cat']}}")
         self.assertTrue(res)
 
     def test_capitalized(self):
         res = set_entry_default('Cat', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'cat', 'words': ['may', 'cat']}}")
         self.assertTrue(res)
 
     def test_possessive(self):
         res = set_entry_default('cat\'s', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'cat', 'words': ['may', 'cat']}}")
         self.assertTrue(res)
 
     def test_unexpected(self):
         res = set_entry_default('CAT', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'CAT', 'words': ['may', 'cat', 'CAT']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'CAT', 'words': ['may', 'cat', 'CAT']}}")
         self.assertTrue(res)
 
     def test_possessive_single_letter(self):
         # Not ideal but it looks better than adding the `a` stuff to all the string comparisons. Easy fix if needed.
         add_word_to_dict('a', self.regex_map)
         res = set_entry_default('a\'s', self.regex_map)
-        self.assertEqual(str(self.regex_map), "{'^[cm][a;][ty]$': {'default': 'may', 'words': ['may', 'cat']}, '^[a;]$': {'default': 'a', 'words': ['a']}}")
+        self.assertEqual(str(self.regex_map), "{'cat': {'default': 'may', 'words': ['may', 'cat']}, 'a': {'default': 'a', 'words': ['a']}}")
         self.assertTrue(res)
 
 

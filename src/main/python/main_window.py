@@ -3,7 +3,7 @@ import functools
 from typing import Callable, Union, List
 
 from PySide2.QtCore import QFile, QSaveFile, QFileInfo, QPoint, QSettings, QSize, Qt, QTextStream, QRegExp
-from PySide2.QtGui import QKeySequence, QRegExpValidator
+from PySide2.QtGui import QKeySequence, QRegExpValidator, QTextCursor, QPixmap
 from PySide2.QtWidgets import (QAction, QApplication, QFileDialog, QMainWindow, QMessageBox, QDialog, QTextEdit,
                                QDockWidget, QFontDialog, QLabel)
 from PySide2.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
@@ -40,13 +40,12 @@ class MainWindow(QMainWindow):
         self.create_status_bar()
         self.create_dock_widget()
 
-        QApplication.processEvents()  # fixes status bar color issue
+        QApplication.processEvents()  # fixes status bar color issue.
 
-        self.read_settings()  # must go after processEvents() to avoid resize overwrite
+        self.read_settings()  # must go after processEvents() or `size` is overwritten for some reason
 
         # self.text_edit.document().contentsChanged.connect(self.document_was_modified)
         self.text_edit.textChanged.connect(self.document_was_modified)
-        self.text_edit.textChanged.connect(lambda: self.md_text_edit.document().setMarkdown(self.text_edit.document().toPlainText()))
         self.text_edit.entry_default_set.connect(self.handle_entry_default_set)
         self.text_edit.mode_toggled.connect(self.mode_label.setText)
 
@@ -64,6 +63,15 @@ class MainWindow(QMainWindow):
 
     def document_was_modified(self):
         self.setWindowModified(True)
+
+    def update_markdown_viewer(self):
+        """Updates contents and viewport of the dock widget."""
+        self.md_text_edit.document().setMarkdown(self.text_edit.document().toPlainText())
+        md_cur = self.md_text_edit.textCursor()
+        md_cur.movePosition(QTextCursor.End)
+        # This strategy could be problematic for large documents, as the lengths diverge. Not especially testable.
+        md_cur.setPosition(min(md_cur.position(), self.text_edit.textCursor().position()))  # len(md) <= len(plaintext)
+        self.md_text_edit.setTextCursor(md_cur)
 
     def new_file(self):
         other = MainWindow(self.regex_map)
@@ -109,7 +117,22 @@ class MainWindow(QMainWindow):
             self.open_file(file_name)
 
     def about(self):
-        QMessageBox.about(self, "About OneHandTextEdit", "Aptly named, a text editor for use with one hand.")
+        about_dialog = QMessageBox(QMessageBox.Information, "OneHandTextEdit", "<h2>OneHandTextEdit</h2>",
+                                   QMessageBox.Close, self)
+        # TODO: set in deploy
+        # icon = QPixmap("/Users/Scott/Desktop/128.png")
+        # if not icon.isNull():
+        #     about_dialog.setIconPixmap(icon)
+        about_dialog.setInformativeText(
+            """
+            <b>v 0.1.0</b>
+            <br>
+            license: <a href='https://www.gnu.org/licenses/gpl-3.0.txt'>GNU GPL 3.0</a>
+            <br>
+            inspiration: <a href='https://blog.xkcd.com/2007/08/14/mirrorboard-a-one-handed-keyboard-layout-for-the-lazy/'>xkcd</a>
+            """
+        )
+        about_dialog.exec_()
 
     def print_(self, printer: QPrinter, text_edit: Union[QTextEdit, MyPlainTextEdit]):
         """
@@ -132,6 +155,8 @@ class MainWindow(QMainWindow):
         :param text_edit: A text editor containing a `document()` QTextDocument.
         :return: None. Side effect: modal dialog, possibly printing.
         """
+        if text_edit == self.md_text_edit:
+            self.update_markdown_viewer()
         printer = QPrinter(QPrinter.HighResolution)
         print_dialog = QPrintDialog(printer, self)
         if print_dialog.exec_() == QDialog.Accepted:
@@ -144,6 +169,8 @@ class MainWindow(QMainWindow):
         :param text_edit: A text editor containing a `document()` QTextDocument.
         :return: None. Side effect: modal print preview.
         """
+        if text_edit == self.md_text_edit:
+            self.update_markdown_viewer()
         printer = QPrinter(QPrinter.HighResolution)
         ppd = QPrintPreviewDialog(printer)
         ppd.paintRequested.connect(lambda: self.print_(printer, text_edit))
@@ -350,6 +377,7 @@ class MainWindow(QMainWindow):
         """
         dock = QDockWidget("Markdown Viewer", self)
         dock.setWidget(self.md_text_edit)
+        dock.visibilityChanged.connect(lambda visible: visible and self.update_markdown_viewer())  # precludes slowdowns
         self.addDockWidget(Qt.BottomDockWidgetArea, dock)
         dock_act = dock.toggleViewAction()
         dock_act.setShortcuts([QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_M),

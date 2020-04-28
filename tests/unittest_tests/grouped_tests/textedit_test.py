@@ -276,7 +276,7 @@ class TestWordcheckModeCycling(unittest.TestCase):
         self.assertNotEqual(col1, default_col, msg="non-default color")
         self.assertNotEqual(col1, col0, msg="changed color")
 
-        QTest.keyClick(self.editor, Qt.Key_R)
+        QTest.keyClick(self.editor, Qt.Key_E)
         new_text = self.editor.toPlainText()
         selection = self.editor.extraSelections()[0]
         col2 = selection.format.background().color().getRgb()
@@ -307,6 +307,8 @@ class TestWordcheckModeCycling(unittest.TestCase):
         self.editor.setTextCursor(cur)
 
         QTest.keyClick(self.editor, Qt.Key_R)
+        QTest.keyClick(self.editor, Qt.Key_R)
+        QTest.keyClick(self.editor, Qt.Key_R)
         new_text = self.editor.toPlainText()
         self.assertEqual(text, new_text, msg="i to e")
 
@@ -326,7 +328,9 @@ class TestWordcheckModeCapsPreserving(unittest.TestCase):
         self.editor.setTextCursor(cur)
 
         QTest.keyClick(self.editor, Qt.Key_R)
-        self.assertEqual(self.editor.toPlainText(), "In ", msg="upper case preserved")
+        self.assertEqual(self.editor.toPlainText(), "In ", msg="upper case options maintained")
+        QTest.keyClick(self.editor, Qt.Key_R)
+        self.assertEqual(self.editor.toPlainText(), "en ", msg="lower case options maintained")
 
 
 if __name__ == '__main__':

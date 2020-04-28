@@ -16,6 +16,7 @@ from OHTE.textedit import Mode
 
 # Mocking modal.
 QMessageBox.information = MagicMock()
+QMessageBox.warning = MagicMock(return_value=QMessageBox.Cancel)
 QPrintDialog.exec_ = MagicMock(return_value=QDialog.Accepted)
 
 
@@ -157,6 +158,7 @@ class TestRecentFiles(object):
             if isinstance(widget, MainWindow):
                 assert not widget.clear_recent_files_act.isEnabled()
 
+
 class TestEntryDefaultSet(object):
     """Checks that everything is hooked up right from MainWindow down to the regex_map fn call."""
     def test_true(self, main_win, qtbot):
@@ -215,6 +217,20 @@ class TestDockingSetup(object):
         assert dock.isVisible()
         qtbot.keyClick(main_win.text_edit, Qt.Key_C, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         assert not dock.isVisible()
+
+    def test_dock_updates_markdown_when_its_made_visible(self, main_win: MainWindow, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        main_win.update_markdown_viewer = MagicMock()
+        dock = main_win.findChild(QDockWidget)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        assert dock.isVisible()
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M)
+        qtbot.keyClick(main_win.text_edit, Qt.Key_C, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
+        qtbot.keyClick(main_win.text_edit, Qt.Key_M)
+        assert not dock.isVisible()
+        assert main_win.update_markdown_viewer.call_count == 1
 
 
 class TestAddWord(object):
@@ -348,10 +364,12 @@ class TestPrintMarkdown(object):
         main_win.show()
         qtbot.addWidget(main_win)
         main_win.print_ = MagicMock()
+        main_win.update_markdown_viewer = MagicMock()
         qtbot.keyClick(main_win.text_edit, Qt.Key_P, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         qtbot.keyClick(main_win.text_edit, Qt.Key_R, modifier=(Qt.ControlModifier | Qt.ShiftModifier))
         assert main_win.print_.call_args[0][1] == main_win.md_text_edit
         assert main_win.print_.call_count == 2
+        assert main_win.update_markdown_viewer.call_count == 2
 
 
 class TestPrintPreview(object):
@@ -365,10 +383,21 @@ class TestPrintPreview(object):
 
 
 class TestPrintMarkdownPreview(object):
-    def test_basic(self, main_win, qtbot):
+    def test_basic(self, main_win: MainWindow, qtbot):
         main_win.show()
         qtbot.addWidget(main_win)
         main_win.print_ = MagicMock()
+        main_win.update_markdown_viewer = MagicMock()
         main_win.print_preview_markdown_act.trigger()
         assert main_win.print_.call_args[0][1] == main_win.md_text_edit
         assert main_win.print_.call_count == 1
+        assert main_win.update_markdown_viewer.call_count == 1
+
+
+class TestMarkdownUpdate(object):
+    def test_doesnt_exceed_max_md_textedit_position(self, main_win: MainWindow, qtbot):
+        main_win.show()
+        qtbot.addWidget(main_win)
+        qtbot.keyClicks(main_win.text_edit, "# hi")
+        main_win.update_markdown_viewer()
+        assert main_win.md_text_edit.textCursor().position() == 2

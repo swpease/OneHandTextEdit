@@ -3,8 +3,13 @@ from unittest.mock import MagicMock, mock_open, patch
 import os
 import json
 
+from PySide2.QtCore import QStandardPaths
+
 from OHTE.main_window import MainWindow
 from OHTE import main
+
+
+QStandardPaths.locate = MagicMock(return_value='')
 
 
 DEST = 'regex_map.json'
@@ -24,7 +29,7 @@ class TestMain(unittest.TestCase):
     def test_save_dictionary_called_on_close(self):
         MainWindow.dict_modified = True
         main.save_dictionary = MagicMock()
-        fake_dict = {'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}
+        fake_dict = {'cat': {'default': 'cat', 'words': ['may', 'cat']}}
         json.load = MagicMock(return_value=fake_dict)
         with self.assertRaises(SystemExit) as se:
             main.main()
@@ -34,7 +39,7 @@ class TestMain(unittest.TestCase):
     def test_opens_default_src_when_not_found_in_users_file_system(self):
         open_spy = mock_open()
         with patch('builtins.open', open_spy):
-            fake_dict = {'^[cm][a;][ty]$': {'default': 'cat', 'words': ['may', 'cat']}}
+            fake_dict = {'cat': {'default': 'cat', 'words': ['may', 'cat']}}
             json.load = MagicMock(return_value=fake_dict)
             with self.assertRaises(SystemExit) as se:
                 main.main()

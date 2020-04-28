@@ -8,69 +8,69 @@ import copy
 
 # Assumes default key mappings.
 letter_regex_map = {
-    'q': '[qp]',
-    'p': '[qp]',
-    'w': '[wo]',
-    'o': '[wo]',
-    'e': '[ei]',
-    'i': '[ei]',
-    'r': '[ru]',
-    'u': '[ru]',
-    't': '[ty]',
-    'y': '[ty]',
+    'q': 'q',
+    'p': 'q',
+    'w': 'w',
+    'o': 'w',
+    'e': 'e',
+    'i': 'e',
+    'r': 'r',
+    'u': 'r',
+    't': 't',
+    'y': 't',
 
-    'a': '[a;]',
-    ';': '[a;]',
-    's': '[ls]',
-    'l': '[ls]',
-    'd': '[dk]',
-    'k': '[dk]',
-    'f': '[fj]',
-    'j': '[fj]',
-    'g': '[gh]',
-    'h': '[gh]',
+    'a': 'a',
+    ';': 'a',
+    's': 's',
+    'l': 's',
+    'd': 'd',
+    'k': 'd',
+    'f': 'f',
+    'j': 'f',
+    'g': 'g',
+    'h': 'g',
 
-    'z': '[z.]',
-    '.': '[z.]',
-    'x': '[x,]',
-    ',': '[x,]',
-    'c': '[cm]',
-    'm': '[cm]',
-    'v': '[vn]',
-    'n': '[vn]',
-    'b': '[b]',
+    'z': 'z',
+    '.': 'z',
+    'x': 'x',
+    ',': 'x',
+    'c': 'c',
+    'm': 'c',
+    'v': 'v',
+    'n': 'v',
+    'b': 'b',
 
-    'Q': '[qp]',
-    'P': '[qp]',
-    'W': '[wo]',
-    'O': '[wo]',
-    'E': '[ei]',
-    'I': '[ei]',
-    'R': '[ru]',
-    'U': '[ru]',
-    'T': '[ty]',
-    'Y': '[ty]',
+    'Q': 'q',
+    'P': 'q',
+    'W': 'w',
+    'O': 'w',
+    'E': 'e',
+    'I': 'e',
+    'R': 'r',
+    'U': 'r',
+    'T': 't',
+    'Y': 't',
 
-    'A': '[a;]',
-    ':': '[a;]',
-    'S': '[ls]',
-    'L': '[ls]',
-    'D': '[dk]',
-    'K': '[dk]',
-    'F': '[fj]',
-    'J': '[fj]',
-    'G': '[gh]',
-    'H': '[gh]',
+    'A': 'a',
+    ':': 'a',
+    'S': 's',
+    'L': 's',
+    'D': 'd',
+    'K': 'd',
+    'F': 'f',
+    'J': 'f',
+    'G': 'g',
+    'H': 'g',
 
-    'Z': '[z.]',
-    '>': '[z.]',
-    'X': '[x,]',
-    '<': '[x,]',
-    'C': '[cm]',
-    'M': '[cm]',
-    'V': '[vn]',
-    'N': '[vn]',
-    'B': '[b]',
+    'Z': 'z',
+    '>': 'z',
+    'X': 'x',
+    '<': 'x',
+    'C': 'c',
+    'M': 'c',
+    'V': 'v',
+    'N': 'v',
+    'B': 'b',
 }
 
 capitalized_symbol_map = {
@@ -89,19 +89,15 @@ letter_to_symbol_map = {
 }
 
 
-def _handle_entry_caps(entry):
+def _handle_entry_caps(entry: Entry) -> Entry:
+    """e.g. ["Fin", "fin", "fen"] --> ["Fin", "fin", "fen", "Fen"] """
     capitalized_words = [wd.capitalize() for wd in entry['words']]
-
-    if entry['default'][0].isupper():  # Don't know if caps were intended -> keep cap and non-cap.
-        deduped_words = [wd for wd in capitalized_words if wd not in entry['words']]
-        entry['words'].extend(deduped_words)
-    else:  # User explicitly capitalized word -> only want capitalized words.
-        deduped_words = []
-        for wd in capitalized_words:
-            if wd not in deduped_words:
-                deduped_words.append(wd)
-        entry['words'] = deduped_words
-        entry['default'] = entry['default'].capitalize()
+    deduped_cap_words = []
+    for wd in capitalized_words:
+        if wd not in deduped_cap_words:
+            deduped_cap_words.append(wd)
+    deduped_words = [wd for wd in deduped_cap_words if wd not in entry['words']]
+    entry['words'].extend(deduped_words)
 
     return entry
 
@@ -149,21 +145,16 @@ def map_word_to_entry(raw_word: str, regex_map):
 
     :param raw_word: pattern ~ r'([A-Za-z\'-]+)$' , w/o leading or trailing `'`
     :param regex_map: The dictionary of words grouped by their regexes {str: Entry}, to draw from.
-    :return: A deep copy of the Entry, if it exists.
+    :return: A deep copy of the Entry, if it exists, with upper case options appended for all lower cased words.
     """
     if len(raw_word) == 0:
         return
-
-    is_capitalized = raw_word[0].isupper()
 
     regex: str = word_to_lc_regex(raw_word)
     entry = regex_map.get(regex)
     if entry is not None:
         entry_copy = copy.deepcopy(entry)
-        if is_capitalized:
-            return _handle_entry_caps(entry_copy)
-        else:
-            return entry_copy
+        return _handle_entry_caps(entry_copy)
 
     # No word found. Check for possessives.
     if raw_word.endswith('\'s'):  # You could eff this up if you manually overwrote s with l.
@@ -174,10 +165,7 @@ def map_word_to_entry(raw_word: str, regex_map):
             entry_copy['default'] = entry_copy['default'] + "'s"
             possessive_words = [word + "'s" for word in entry_copy['words']]
             entry_copy['words'] = possessive_words
-            if is_capitalized:
-                return _handle_entry_caps(entry_copy)
-            else:
-                return entry_copy
+            return _handle_entry_caps(entry_copy)
 
     return  # No matched, so return None.
 
@@ -281,10 +269,9 @@ def word_to_lc_regex(word: str) -> str:
        Note that these regexes are basically used as lookup keys, not for actual regexing.
        For instance, the caret and backslash characters, as is, will yield incorrect / invalid patterns.
     """
-    regex = '^'
+    regex = ''
     for i in word:
-        regex += letter_regex_map.get(i, '[' + i + ']')  # Do I need to worry about "\" escaping for Qt?
-    regex += '$'
+        regex += letter_regex_map.get(i, i)  # Do I need to worry about "\" escaping for Qt?
 
     return regex
 
