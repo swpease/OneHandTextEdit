@@ -1,5 +1,5 @@
 # Table of Contents
----
+- [Demo](#demo)
 - [Rationale](#rationale)
 - [How It Works](#how-it-works)
 - [Suggested Additional Software and Settings](#suggested-additional-software-and-settings)
@@ -9,8 +9,13 @@
 
 &nbsp;
 
+# Demo
+
+[YouTube demo](https://www.youtube.com/watch?v=6XQs7i8cP24)
+
+&nbsp;
+
 # Rationale
----
 There aren't a lot of good options for trying to input text to your computer without using two hands. Dictation works pretty well as of 2020, but it isn't perfect, which means you have to go back through and edit it. There are a few pieces of custom hardware out there, but they are rare, expensive, and the one that I managed to acquire was slow and difficult to learn, and stressed out my hand.
 
 OneHandTextEdit addresses these problems by making use of something that all computer users already have (a keyboard), in a way that is highly familiar. You'll be surprised at how intuitive it is to do the mental change-over and start typing at an acceptable pace.
@@ -18,7 +23,6 @@ OneHandTextEdit addresses these problems by making use of something that all com
 &nbsp;
 
 # How It Works
----
 Basically, the keyboard is mirrored along its middle. "P" and "Q", "F" and "J", "Z" and ".", and so on, with "B" all by its lonesome.
 
 Making a dictionary that returns options for, say, "say" [(l or s), (a or ;), (t or y)] tends to yield only a single word. Of the 5000 most common words in contemporary American English, 94% are unique in such a dictionary. This means that when you want to use such heavy-hitters as "the" and "and", they just work.
@@ -26,7 +30,6 @@ Making a dictionary that returns options for, say, "say" [(l or s), (a or ;), (t
 &nbsp;
 
 # Suggested Additional Software and Settings
----
 Probably the biggest issue with trying to type with one hand is the non-letter keys. Stretching over to reach the escape, then the delete, then caps lock, is awful. On macOS, there is [Karabiner-Elements](https://karabiner-elements.pqrs.org/), which lets you switch around which keys do what. For instance, if you're typing with your right hand, you might map you tab key to the "\\" key.
 
 Remapping keyboard layouts can be done with [Ukelele](https://software.sil.org/ukelele/), so you could, if you were crazy, set "a" to be "a", (shift + a) to be "O", (caps lock + a) to be "|", and so on. You could remap things however you want, but keep in mind the mirroring (e.g. that "art" and ";uy" both give you "art"). You might find it useful for getting some symbols over to a more convenient location.
@@ -40,7 +43,6 @@ You might consider using dictation, usable on macOS with a double press of the c
 &nbsp;
 
 # Use Basics
----
 Just type... pretend that your single hand is both hands. So, whether you go for the "d" or "k" key, your brain just says "middle finger middle row".
 
 The words are coerced after you press space, return, or "/", so it will look like a jumbled mess until you hit one of those buttons.
@@ -54,7 +56,6 @@ If you like one of the other words more, you can change the default word by pres
 &nbsp;
 
 # Features
----
 ## Find and Replace
 The find and replace feature **does not** provide any sort of text manipulation: what you type in is exactly what it finds / replaces.
 
@@ -73,7 +74,6 @@ OneHandTextEdit currently provides only plaintext and Markdown support. "Rich te
 &nbsp;
 
 # Maps
----
 ## Insert Mode
 | Left | Right |
 |------|-------|
